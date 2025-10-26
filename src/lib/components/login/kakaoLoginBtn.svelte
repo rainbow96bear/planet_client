@@ -23,8 +23,8 @@
   gap: 8px;
   padding: 0.8rem 1rem;
   border-radius: 0.6rem;
-  background: var(--button-bg);
-  color: var(--button-text);
+  background: #fee500;;
+  color: #191600;
   font-weight: bold;
   text-decoration: none;
   transition: all 0.2s ease;

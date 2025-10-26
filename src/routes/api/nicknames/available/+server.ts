@@ -13,7 +13,7 @@ export const GET: RequestHandler = async ({ url }) => {
   }
 
   try {
-    const res = await fetch(`${AUTH_SERVER_API_URL}/auth/nickname/available?nickname=${encodeURIComponent(nickname)}`, {
+    const res = await fetch(`${AUTH_SERVER_API_URL}/auth/user/nickname/check?nickname=${encodeURIComponent(nickname)}`, {
       method: "GET",
       headers: { "Content-Type": "application/json" }
     });
