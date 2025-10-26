@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import FeedCard from '$lib/components/common/feed/FeedCard.svelte';
   
+  
   // 피드 데이터
   const feeds = [
     {
@@ -113,15 +114,7 @@
     <div class="feed-list">
       {#each feeds as feed (feed.id)}
       <div class="feed-container">
-
-          <FeedCard 
-          {feed}
-          on:like={handleLike}
-          on:comment={handleComment}
-          on:bookmark={handleBookmark}
-          on:share={handleShare}
-          on:more={handleMore}
-          />
+          <FeedCard {feed} on:like on:comment on:bookmark on:share on:more />
         </div>
       {/each}
     </div>

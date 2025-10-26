@@ -21,7 +21,6 @@
       isSearchFocused = false;
     }
   }
-  console.log(isLoggedIn)
 </script>
 
 <div class="header">

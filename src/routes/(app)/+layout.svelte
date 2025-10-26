@@ -8,6 +8,9 @@
   import Footer from '$lib/components/footer/Footer.svelte';
   import NavigationBar from '$lib/components/sideBar/NavigationBar.svelte';
 	import TrendingTags from '$lib/components/widget/TrendingTags.svelte';
+	import { initAuth } from '../../hooks.client';
+	import { get } from 'svelte/store';
+	import { auth, isAccessTokenValid } from '$lib/stores/auth';
   
   let isLoggedIn = false;
 
@@ -37,18 +40,14 @@
     console.log('팔로우:', handle);
   }
 
-  onMount(() => {
+  onMount(async () => {
     // 초기 테마 적용
     const storedTheme = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', storedTheme);
     theme.setTheme(storedTheme as 'light' | 'dark');
 
-    // refresh_token이 쿠키에 있는지 확인
-    const cookies = document.cookie.split(';').map(c => c.trim());
-    console.log(cookies)
-    const hasRefreshToken = cookies.some(c => c.startsWith('refresh_token'));
-    isLoggedIn = hasRefreshToken;
-    console.log(hasRefreshToken)
+    await initAuth(); // 페이지 로드 시 토큰 갱신 시도
+    isLoggedIn = isAccessTokenValid(); // access token 유무로 로그인 판단
   });
    $: currentPath = $page.url.pathname;
 </script>

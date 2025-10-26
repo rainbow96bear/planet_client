@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Calender from '$lib/components/common/calender/Calender.svelte';
-  import { onMount } from 'svelte';
+	import FeedCard from '$lib/components/common/feed/FeedCard.svelte';
   
   let activeView: 'calendar' | 'feed' = 'calendar';
   
@@ -30,9 +30,14 @@
   const feeds = [
     {
       id: 1,
+      user: { name: '박지은', handle: '@jieun_fit', avatar: '🏃‍♀️' },
       date: '10월 25-27일',
       title: '부산 출장',
-      todos: ['호텔 예약 완료', '업무 미팅 3건', '맛집 투어'],
+      todos: [
+        { text: '호텔 예약 완료', completed: true },
+        { text: '업무 미팅 3건', completed: true },
+        { text: '맛집 투어', completed: false }
+      ],
       image: true,
       visibility: 'public',
       likes: 42,
@@ -41,31 +46,19 @@
     },
     {
       id: 2,
+      user: { name: '박지은', handle: '@jieun_fit', avatar: '🏃‍♀️' },
       date: '10월 22일',
       title: '오늘의 운동',
-      todos: ['아침 러닝 5km', '근력 운동 1시간'],
+      todos: [
+        { text: '아침 러닝 5km', completed: true },
+        { text: '근력 운동 1시간', completed: true },
+      ],
       visibility: 'public',
       likes: 28,
       comments: 5,
       emoji: '💪'
     }
   ];
-  
-  function getEventsForDay(day: number) {
-    return events.filter(event => day >= event.start && day <= event.end);
-  }
-  
-  function getEmojisForDay(day: number) {
-    const dayEvents = getEventsForDay(day);
-    return dayEvents.slice(0, 2).map(e => e.emoji);
-  }
-  
-  function getCompletionStyle(completion: number) {
-    if (completion === 0) return '#F9FAFB';
-    if (completion < 50) return 'rgba(125,189,182,0.1)';
-    if (completion < 80) return 'rgba(125,189,182,0.2)';
-    return 'linear-gradient(135deg, rgba(125,189,182,0.3), rgba(139,157,195,0.3))';
-  }
 </script>
 
 <div class="container">
@@ -130,50 +123,7 @@
     <div class="content">
       <div class="feed-list">
         {#each feeds as feed}
-          <div class="feed-card">
-            <div class="feed-header">
-              <div class="feed-title-section">
-                <span class="feed-emoji">{feed.emoji}</span>
-                <div>
-                  <div class="feed-title">{feed.title}</div>
-                  <div class="feed-date">{feed.date}</div>
-                </div>
-              </div>
-              <div class="feed-visibility">
-                {feed.visibility === 'public' ? '전체 공개' : '친구 공개'}
-              </div>
-            </div>
-
-            <div class="feed-todos">
-              {#each feed.todos as todo}
-                <div class="todo-item">
-                  <div class="todo-dot"></div>
-                  <span>{todo}</span>
-                </div>
-              {/each}
-            </div>
-
-            {#if feed.image}
-              <div class="feed-image">
-                <div class="image-bg-decoration decoration-a"></div>
-                <div class="image-bg-decoration decoration-b"></div>
-                <div class="image-bg-decoration decoration-c"></div>
-                <div class="feed-emoji-large">{feed.emoji}</div>
-              </div>
-            {/if}
-
-            <div class="feed-actions">
-              <button class="action-btn">
-                ❤️ <span>{feed.likes}</span>
-              </button>
-              <button class="action-btn">
-                💬 <span>{feed.comments}</span>
-              </button>
-              <button class="action-btn bookmark">
-                🔖
-              </button>
-            </div>
-          </div>
+          <FeedCard {feed} on:like on:comment on:bookmark on:share on:more />
         {/each}
       </div>
     </div>
@@ -326,144 +276,6 @@
     gap: 1rem;
   }
 
-  .feed-card {
-    background: var(--bg-primary);
-    border-radius: 1rem;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-color);
-    overflow: hidden;
-  }
-
-  .feed-header {
-    padding: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-  }
-
-  .feed-title-section {
-    display: flex;
-    gap: 0.5rem;
-  }
-
-  .feed-emoji {
-    font-size: 1.125rem;
-  }
-
-  .feed-title {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.125rem;
-  }
-
-  .feed-date {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-  }
-
-  .feed-visibility {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-  }
-
-  .feed-todos {
-    padding: 0 1rem 1rem 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .todo-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    color: var(--text-primary);
-  }
-
-  .todo-dot {
-    width: 0.375rem;
-    height: 0.375rem;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-    margin-top: 0.375rem;
-    flex-shrink: 0;
-  }
-
-  .feed-image {
-    height: 12rem;
-    background: linear-gradient(135deg, rgba(125,189,182,0.1), rgba(139,157,195,0.1), rgba(184,164,201,0.1));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .image-bg-decoration {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(40px);
-  }
-
-  .decoration-a {
-    top: 2rem;
-    left: 3rem;
-    width: 4rem;
-    height: 4rem;
-    background: rgba(255, 255, 255, 0.3);
-  }
-
-  .decoration-b {
-    bottom: 3rem;
-    right: 4rem;
-    width: 6rem;
-    height: 6rem;
-    background: rgba(255, 255, 255, 0.2);
-  }
-
-  .decoration-c {
-    top: 50%;
-    right: 2rem;
-    width: 3rem;
-    height: 3rem;
-    background: rgba(255, 255, 255, 0.25);
-  }
-
-  .feed-emoji-large {
-    font-size: 4.5rem;
-    position: relative;
-    z-index: 10;
-  }
-
-  .feed-actions {
-    padding: 0.75rem 1rem;
-    border-top: 1px solid var(--border-light);
-    display: flex;
-    gap: 1rem;
-  }
-
-  .action-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    border: none;
-    background: none;
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: opacity 0.2s;
-  }
-
-  .action-btn:hover {
-    opacity: 0.7;
-  }
-
-  .action-btn.bookmark {
-    margin-left: auto;
-  }
-
   /* 반응형 */
   @media (max-width: 768px) {
     .container {
@@ -474,26 +286,6 @@
     .stats {
       flex-direction: column;
       gap: 0.5rem;
-    }
-
-    .calendar-grid {
-      gap: 0.25rem;
-    }
-
-    .calendar-row {
-      gap: 0.25rem;
-    }
-
-    .day-cell {
-      font-size: 0.75rem;
-    }
-
-    .plans-list {
-      gap: 0.25rem;
-    }
-
-    .feed-card {
-      font-size: 0.875rem;
     }
   }
 </style>

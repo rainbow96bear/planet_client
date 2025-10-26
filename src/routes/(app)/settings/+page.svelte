@@ -17,7 +17,7 @@
     // 로그아웃 API 호출
     try {
       await fetch('/api/logout', { method: 'POST' });
-      goto('/login');
+      goto('/');
     } catch (err) {
       console.error('로그아웃 실패:', err);
     }
@@ -146,7 +146,7 @@
 
 <style>
   .container {
-    max-width: 28rem;
+    width: 100%;
     margin: 0 auto;
     min-height: 100vh;
     background: linear-gradient(to bottom, var(--bg-gradient-start), var(--bg-gradient-end));

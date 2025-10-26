@@ -1,84 +1,55 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  
-  export let feed: {
-    id: number;
-    user: {
-      name: string;
-      handle: string;
-      avatar: string;
-    };
-    date: string;
-    title: string;
-    todos: Array<{
-      text: string;
-      completed: boolean;
-    }>;
-    image: boolean;
-    emoji: string;
-    visibility: string;
-    likes: number;
-    comments: number;
-    isLiked: boolean;
-  };
-  
-  // 이벤트 디스패처
   import { createEventDispatcher } from 'svelte';
+  import { goto } from '$app/navigation';
+
+  export let feed: any; // 필요하면 타입을 공통으로 맞출 수도 있음
   const dispatch = createEventDispatcher();
-  
+
   function goToProfile(handle: string) {
-    goto(`/profile/${handle.replace('@', '')}`);
+    goto(`/profile/${handle?.replace('@', '')}`);
   }
-  
-  function handleLike() {
-    dispatch('like', { feedId: feed.id });
+
+  function handleAction(action: string) {
+    dispatch(action, { feedId: feed.id });
   }
-  
-  function handleComment() {
-    dispatch('comment', { feedId: feed.id });
-  }
-  
-  function handleBookmark() {
-    dispatch('bookmark', { feedId: feed.id });
-  }
-  
-  function handleShare() {
-    dispatch('share', { feedId: feed.id });
-  }
-  
-  function handleMore() {
-    dispatch('more', { feedId: feed.id });
-  }
+
+  // todos가 문자열 배열이면 객체 형태로 변환
+  $: todos = feed.todos.map(todo =>
+    typeof todo === 'string'
+      ? { text: todo, completed: false }
+      : todo
+  );
+
+  // user 객체가 없는 경우 기본값
+  $: user = feed.user || { name: '익명', handle: '', avatar: '👤' };
 </script>
 
 <article class="feed-card">
-  <!-- 피드 헤더 -->
   <div class="feed-header">
-    <button class="user-info" on:click={() => goToProfile(feed.user.handle)}>
-      <div class="user-avatar">{feed.user.avatar}</div>
+    <button class="user-info" on:click={() => goToProfile(user.handle)}>
+      <div class="user-avatar">{user.avatar}</div>
       <div class="user-details">
-        <div class="user-name">{feed.user.name}</div>
+        <div class="user-name">{user.name}</div>
         <div class="user-meta">
-          <span class="user-handle">{feed.user.handle}</span>
-          <span class="dot">•</span>
+          {#if user.handle}
+            <span class="user-handle">{user.handle}</span>
+            <span class="dot">•</span>
+          {/if}
           <span class="post-time">{feed.date}</span>
         </div>
       </div>
     </button>
-    
-    <button class="more-btn" on:click={handleMore} title="더보기">⋯</button>
+    <button class="more-btn" on:click={() => handleAction('more')} title="더보기">⋯</button>
   </div>
 
-  <!-- 피드 콘텐츠 -->
   <div class="feed-content">
     <div class="feed-title">
       <span class="title-emoji">{feed.emoji}</span>
       <h2>{feed.title}</h2>
     </div>
 
-    <!-- Todo 리스트 -->
     <div class="todo-list">
-      {#each feed.todos as todo}
+      {#each todos as todo}
         <div class="todo-item" class:completed={todo.completed}>
           <div class="todo-checkbox">
             {#if todo.completed}
@@ -87,14 +58,11 @@
               <div class="checkbox-unchecked"></div>
             {/if}
           </div>
-          <span class="todo-text" class:completed={todo.completed}>
-            {todo.text}
-          </span>
+          <span class="todo-text">{todo.text}</span>
         </div>
       {/each}
     </div>
 
-    <!-- 이미지 -->
     {#if feed.image}
       <div class="feed-image">
         <div class="image-decoration decoration-1"></div>
@@ -105,27 +73,22 @@
     {/if}
   </div>
 
-  <!-- 피드 액션 -->
   <div class="feed-actions">
-    <button 
-      class="action-btn"
-      class:liked={feed.isLiked}
-      on:click={handleLike}
-    >
+    <button class="action-btn" class:liked={feed.isLiked} on:click={() => handleAction('like')}>
       <span class="action-icon">{feed.isLiked ? '❤️' : '🤍'}</span>
       <span class="action-count">{feed.likes}</span>
     </button>
-    
-    <button class="action-btn" on:click={handleComment}>
+
+    <button class="action-btn" on:click={() => handleAction('comment')}>
       <span class="action-icon">💬</span>
       <span class="action-count">{feed.comments}</span>
     </button>
-    
-    <button class="action-btn" on:click={handleBookmark}>
+
+    <button class="action-btn" on:click={() => handleAction('bookmark')}>
       <span class="action-icon">🔖</span>
     </button>
-    
-    <button class="action-btn" on:click={handleShare}>
+
+    <button class="action-btn" on:click={() => handleAction('share')}>
       <span class="action-icon">📤</span>
     </button>
   </div>
