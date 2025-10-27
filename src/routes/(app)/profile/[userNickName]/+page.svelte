@@ -1,19 +1,246 @@
 <script lang="ts">
-	import Calender from '$lib/components/common/calender/Calender.svelte';
-	import FeedCard from '$lib/components/common/feed/FeedCard.svelte';
+  import { onMount } from 'svelte';
+  import { page } from '$app/stores';
+  import { auth } from '$lib/stores/auth';
+  import Calender from '$lib/components/common/calender/Calender.svelte';
+  import FeedCard from '$lib/components/common/feed/FeedCard.svelte';
   
   let activeView: 'calendar' | 'feed' = 'calendar';
+  let userNickName: string;
   
-  // 일정 데이터
-  const events = [
+  // 프로필 데이터
+  let profileData: any = null;
+  let isLoadingProfile = true;
+  
+  // 캘린더 데이터
+  let calendarData: any = null;
+  let isLoadingCalendar = false;
+  let calendarLoaded = false; // 캐싱 플래그
+  
+  // 피드 데이터
+  let feedData: any[] = [];
+  let isLoadingFeed = false;
+  let feedLoaded = false; // 캐싱 플래그
+  
+  onMount(() => {
+    userNickName = $page.params.userNickName;
+    loadProfile();
+    // 첫 로드 시 캘린더 자동 로드
+    loadCalendar();
+  });
+  
+  // 프로필 정보 로드
+  async function loadProfile() {
+    isLoadingProfile = true;
+    try {
+      const res = await fetch(`/api/profile/${userNickName}`);
+      if (res.ok) {
+        profileData = await res.json();
+      } else {
+        console.error('프로필 조회 실패:', res.status);
+      }
+    } catch (err) {
+      console.error('프로필 정보 조회 오류:', err);
+    } finally {
+      isLoadingProfile = false;
+    }
+  }
+  
+  // 캘린더 데이터 로드
+  async function loadCalendar() {
+    // 이미 로드된 경우 재요청 방지 (캐싱)
+    if (calendarLoaded) return;
+    
+    isLoadingCalendar = true;
+    try {
+      const res = await fetch(`/api/profile/${userNickName}/calendar`);
+      if (res.ok) {
+        calendarData = await res.json();
+        calendarLoaded = true; // 캐싱 플래그 설정
+      } else {
+        console.error('캘린더 조회 실패:', res.status);
+      }
+    } catch (err) {
+      console.error('캘린더 조회 오류:', err);
+    } finally {
+      isLoadingCalendar = false;
+    }
+  }
+  
+  // 피드 데이터 로드
+  async function loadFeed() {
+    // 이미 로드된 경우 재요청 방지 (캐싱)
+    if (feedLoaded) return;
+    
+    isLoadingFeed = true;
+    try {
+      const res = await fetch(`/api/profile/${userNickName}/feed`);
+      if (res.ok) {
+        feedData = await res.json();
+        feedLoaded = true; // 캐싱 플래그 설정
+      } else {
+        console.error('피드 조회 실패:', res.status);
+      }
+    } catch (err) {
+      console.error('피드 조회 오류:', err);
+    } finally {
+      isLoadingFeed = false;
+    }
+  }
+  
+  // 탭 전환 시 데이터 로드
+  function handleTabChange(view: 'calendar' | 'feed') {
+    activeView = view;
+    
+    // 선택된 탭의 데이터가 아직 로드되지 않은 경우에만 로드
+    if (view === 'calendar' && !calendarLoaded) {
+      loadCalendar();
+    } else if (view === 'feed' && !feedLoaded) {
+      loadFeed();
+    }
+  }
+  
+  // 피드 이벤트 핸들러
+  function handleLike(event: CustomEvent) {
+    console.log('좋아요:', event.detail);
+    // TODO: 좋아요 API 호출
+  }
+  
+  function handleComment(event: CustomEvent) {
+    console.log('댓글:', event.detail);
+    // TODO: 댓글 페이지로 이동
+  }
+  
+  function handleBookmark(event: CustomEvent) {
+    console.log('북마크:', event.detail);
+    // TODO: 북마크 API 호출
+  }
+  
+  function handleShare(event: CustomEvent) {
+    console.log('공유:', event.detail);
+    // TODO: 공유 기능
+  }
+  
+  function handleMore(event: CustomEvent) {
+    console.log('더보기:', event.detail);
+    // TODO: 더보기 메뉴
+  }
+
+  $: isMyProfile = $page.params.nickname === $auth.nickname;
+</script>
+
+<div class="container">
+  <!-- 프로필 헤더 -->
+  {#if isLoadingProfile}
+    <div class="profile-header loading">
+      <div class="loading-spinner">로딩 중...</div>
+    </div>
+  {:else if profileData}
+    <div class="profile-header">
+      <div class="bg-decoration decoration-1"></div>
+      <div class="bg-decoration decoration-2"></div>
+      
+      <div class="header-content">
+        <div class="profile-info">
+          <div class="avatar">
+            <span class="avatar-emoji">{profileData.avatar || '🪐'}</span>
+          </div>
+          <div class="user-info">
+            <h1 class="username">{profileData.name}</h1>
+            <p class="handle">@{profileData.nickname}</p>
+          </div>
+        </div>
+        
+        <div class="stats">
+          <div class="stat-item">
+            <div class="stat-value">{profileData.followerCount || 0}</div>
+            <div class="stat-label">팔로워</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{profileData.followingCount || 0}</div>
+            <div class="stat-label">팔로잉</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">{profileData.monthlyEventCount || 0}</div>
+            <div class="stat-label">이번 달</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {:else}
+    <div class="error-message">프로필을 불러올 수 없습니다.</div>
+  {/if}
+
+  <!-- 탭 네비게이션 -->
+  <div class="tabs">
+    <button
+      class="tab"
+      class:active={activeView === 'calendar'}
+      on:click={() => handleTabChange('calendar')}
+    >
+      캘린더
+    </button>
+    <button
+      class="tab"
+      class:active={activeView === 'feed'}
+      on:click={() => handleTabChange('feed')}
+    >
+      피드
+    </button>
+  </div>
+
+  <!-- 캘린더 뷰 -->
+  {#if activeView === 'calendar'}
+    <div class="content">
+      {#if isLoadingCalendar}
+        <div class="loading-message">캘린더를 불러오는 중...</div>
+      {:else if calendarData}
+        <Calender 
+          events={calendarData.events}
+          monthData={calendarData.monthData}
+          completionData={calendarData.completionData}
+        />
+      {:else}
+        <div class="empty-message">캘린더 데이터가 없습니다.</div>
+      {/if}
+    </div>
+  {/if}
+
+  <!-- 피드 뷰 -->
+  {#if activeView === 'feed'}
+    <div class="content">
+      {#if isLoadingFeed}
+        <div class="loading-message">피드를 불러오는 중...</div>
+      {:else if feedData.length > 0}
+        <div class="feed-list">
+          {#each feedData as feed (feed.id)}
+            <FeedCard 
+              {feed} 
+              on:like={handleLike}
+              on:comment={handleComment}
+              on:bookmark={handleBookmark}
+              on:share={handleShare}
+              on:more={handleMore}
+            />
+          {/each}
+        </div>
+      {:else}
+        <div class="empty-message">아직 작성된 피드가 없습니다.</div>
+      {/if}
+    </div>
+  {/if}
+</div>
+
+<!-- 더미 데이터 (개발용) -->
+<!-- 
+<script lang="ts">
+  // 더미 데이터
+  const dummyEvents = [
     { id: 1, title: '제주도 여행', start: 13, end: 15, visibility: 'public', emoji: '🏝️' },
     { id: 2, title: '프로젝트 마감', start: 10, end: 12, visibility: 'friends', emoji: '💼' },
-    { id: 3, title: '운동', start: 16, end: 16, visibility: 'public', emoji: '💪' },
-    { id: 4, title: '독서 챌린지', start: 1, end: 30, visibility: 'private', emoji: '📚' },
   ];
   
-  // 월간 데이터
-  const monthData = [
+  const dummyMonthData = [
     [null, null, null, null, 1, 2, 3],
     [4, 5, 6, 7, 8, 9, 10],
     [11, 12, 13, 14, 15, 16, 17],
@@ -21,13 +248,11 @@
     [25, 26, 27, 28, 29, 30, 31]
   ];
   
-  // 완료율 데이터
-  const completionData: Record<number, number> = {
-    1: 20, 2: 20, 3: 20, 10: 100, 11: 80, 12: 90, 13: 100, 14: 100, 15: 100,
-    16: 100, 18: 100, 20: 100, 21: 50, 22: 100, 23: 60, 25: 80, 26: 70, 27: 60
+  const dummyCompletionData = {
+    1: 20, 2: 20, 3: 20, 10: 100, 11: 80, 12: 90,
   };
   
-  const feeds = [
+  const dummyFeeds = [
     {
       id: 1,
       user: { name: '박지은', handle: '@jieun_fit', avatar: '🏃‍♀️' },
@@ -36,99 +261,16 @@
       todos: [
         { text: '호텔 예약 완료', completed: true },
         { text: '업무 미팅 3건', completed: true },
-        { text: '맛집 투어', completed: false }
       ],
       image: true,
       visibility: 'public',
       likes: 42,
       comments: 12,
       emoji: '🚄'
-    },
-    {
-      id: 2,
-      user: { name: '박지은', handle: '@jieun_fit', avatar: '🏃‍♀️' },
-      date: '10월 22일',
-      title: '오늘의 운동',
-      todos: [
-        { text: '아침 러닝 5km', completed: true },
-        { text: '근력 운동 1시간', completed: true },
-      ],
-      visibility: 'public',
-      likes: 28,
-      comments: 5,
-      emoji: '💪'
     }
   ];
 </script>
-
-<div class="container">
-  <!-- 프로필 헤더 -->
-  <div class="profile-header">
-    <div class="bg-decoration decoration-1"></div>
-    <div class="bg-decoration decoration-2"></div>
-    
-    <div class="header-content">
-      <div class="profile-info">
-        <div class="avatar">
-          <span class="avatar-emoji">🪐</span>
-        </div>
-        <div class="user-info">
-          <h1 class="username">김지현</h1>
-          <p class="handle">@jihyun_daily</p>
-        </div>
-      </div>
-      
-      <div class="stats">
-        <div class="stat-item">
-          <div class="stat-value">247</div>
-          <div class="stat-label">팔로워</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">189</div>
-          <div class="stat-label">팔로잉</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value">24</div>
-          <div class="stat-label">이번 달</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 탭 네비게이션 -->
-  <div class="tabs">
-    <button
-      class="tab"
-      class:active={activeView === 'calendar'}
-      on:click={() => activeView = 'calendar'}
-    >
-      캘린더
-    </button>
-    <button
-      class="tab"
-      class:active={activeView === 'feed'}
-      on:click={() => activeView = 'feed'}
-    >
-      피드
-    </button>
-  </div>
-
-  <!-- 캘린더 뷰 -->
-  {#if activeView === 'calendar'}
-    <Calender {events} {monthData} {completionData}></Calender>
-  {/if}
-
-  <!-- 피드 뷰 -->
-  {#if activeView === 'feed'}
-    <div class="content">
-      <div class="feed-list">
-        {#each feeds as feed}
-          <FeedCard {feed} on:like on:comment on:bookmark on:share on:more />
-        {/each}
-      </div>
-    </div>
-  {/if}
-</div>
+-->
 
 <style>
   .container {
@@ -144,6 +286,18 @@
     box-shadow: var(--shadow-lg);
     position: relative;
     overflow: hidden;
+  }
+
+  .profile-header.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 12rem;
+  }
+
+  .loading-spinner {
+    color: white;
+    font-size: 1rem;
   }
 
   .bg-decoration {
@@ -276,16 +430,30 @@
     gap: 1rem;
   }
 
+  /* 로딩 & 에러 메시지 */
+  .loading-message,
+  .empty-message,
+  .error-message {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary);
+    font-size: 0.9375rem;
+  }
+
+  .error-message {
+    color: #EF4444;
+    background: var(--bg-primary);
+    padding: 2rem 1rem;
+  }
+
   /* 반응형 */
   @media (max-width: 768px) {
     .container {
       max-width: 100%;
-      padding: 0 1rem;
     }
 
-    .stats {
-      flex-direction: column;
-      gap: 0.5rem;
+    .profile-header {
+      padding: 1rem;
     }
   }
 </style>
