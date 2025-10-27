@@ -4,13 +4,11 @@
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { theme } from '$lib/stores/theme';
+	import { isAccessTokenValid } from '$lib/stores/auth';
   import Header from '$lib/components/header/Header.svelte';
   import Footer from '$lib/components/footer/Footer.svelte';
   import NavigationBar from '$lib/components/sideBar/NavigationBar.svelte';
 	import TrendingTags from '$lib/components/widget/TrendingTags.svelte';
-	import { initAuth } from '../../hooks.client';
-	import { get } from 'svelte/store';
-	import { auth, isAccessTokenValid } from '$lib/stores/auth';
   
   let isLoggedIn = false;
 
@@ -46,8 +44,7 @@
     document.documentElement.setAttribute('data-theme', storedTheme);
     theme.setTheme(storedTheme as 'light' | 'dark');
 
-    await initAuth(); // 페이지 로드 시 토큰 갱신 시도
-    isLoggedIn = isAccessTokenValid(); // access token 유무로 로그인 판단
+    isLoggedIn = isAccessTokenValid();
   });
    $: currentPath = $page.url.pathname;
 </script>

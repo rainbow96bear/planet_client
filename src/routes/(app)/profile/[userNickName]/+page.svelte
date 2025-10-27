@@ -2,14 +2,15 @@
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
   import { auth } from '$lib/stores/auth';
-  import Calender from '$lib/components/common/calender/Calender.svelte';
+  import Calendar from '$lib/components/common/calendar/Calendar.svelte';
   import FeedCard from '$lib/components/common/feed/FeedCard.svelte';
+	import type { UserProfile } from '$lib/types/profile';
   
   let activeView: 'calendar' | 'feed' = 'calendar';
-  let userNickName: string;
+  let userNickName: string|undefined;
   
   // 프로필 데이터
-  let profileData: any = null;
+  let profile: UserProfile|null = null;
   let isLoadingProfile = true;
   
   // 캘린더 데이터
@@ -26,7 +27,7 @@
     userNickName = $page.params.userNickName;
     loadProfile();
     // 첫 로드 시 캘린더 자동 로드
-    loadCalendar();
+    // loadCalendar();
   });
   
   // 프로필 정보 로드
@@ -35,7 +36,8 @@
     try {
       const res = await fetch(`/api/profile/${userNickName}`);
       if (res.ok) {
-        profileData = await res.json();
+        const data = await res.json();
+        profile = data.profile;
       } else {
         console.error('프로필 조회 실패:', res.status);
       }
@@ -74,7 +76,7 @@
     
     isLoadingFeed = true;
     try {
-      const res = await fetch(`/api/profile/${userNickName}/feed`);
+      const res = await fetch(`/api/profile/${userNickName}/feeds`);
       if (res.ok) {
         feedData = await res.json();
         feedLoaded = true; // 캐싱 플래그 설정
@@ -126,7 +128,7 @@
     // TODO: 더보기 메뉴
   }
 
-  $: isMyProfile = $page.params.nickname === $auth.nickname;
+  // $: isMyProfile = $page.params.nickname === $auth.nickname;
 </script>
 
 <div class="container">
@@ -135,7 +137,7 @@
     <div class="profile-header loading">
       <div class="loading-spinner">로딩 중...</div>
     </div>
-  {:else if profileData}
+  {:else if profile}
     <div class="profile-header">
       <div class="bg-decoration decoration-1"></div>
       <div class="bg-decoration decoration-2"></div>
@@ -143,27 +145,28 @@
       <div class="header-content">
         <div class="profile-info">
           <div class="avatar">
-            <span class="avatar-emoji">{profileData.avatar || '🪐'}</span>
+            <!-- <span class="avatar-emoji">{profile.profile_image  || '🪐'}</span> -->
+            <span class="avatar-emoji">{'🪐'}</span>
           </div>
           <div class="user-info">
-            <h1 class="username">{profileData.name}</h1>
-            <p class="handle">@{profileData.nickname}</p>
+            <h1 class="username">{profile.nickname}</h1>
+            <p class="handle">{profile.bio}</p>
           </div>
         </div>
         
         <div class="stats">
           <div class="stat-item">
-            <div class="stat-value">{profileData.followerCount || 0}</div>
+            <div class="stat-value">{profile.followerCount || 0}</div>
             <div class="stat-label">팔로워</div>
           </div>
           <div class="stat-item">
-            <div class="stat-value">{profileData.followingCount || 0}</div>
+            <div class="stat-value">{profile.followingCount || 0}</div>
             <div class="stat-label">팔로잉</div>
           </div>
-          <div class="stat-item">
-            <div class="stat-value">{profileData.monthlyEventCount || 0}</div>
+          <!-- <div class="stat-item">
+            <div class="stat-value">{profile.monthlyEventCount || 0}</div>
             <div class="stat-label">이번 달</div>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>
@@ -195,7 +198,7 @@
       {#if isLoadingCalendar}
         <div class="loading-message">캘린더를 불러오는 중...</div>
       {:else if calendarData}
-        <Calender 
+        <Calendar 
           events={calendarData.events}
           monthData={calendarData.monthData}
           completionData={calendarData.completionData}

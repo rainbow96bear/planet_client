@@ -178,7 +178,6 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1.5rem;
     position: relative;
     overflow: hidden;
     background: linear-gradient(to bottom, #E8F3F1, #F0F0FF);

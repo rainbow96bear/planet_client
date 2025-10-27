@@ -42,7 +42,12 @@ export async function initAuth() {
 		});
 
 		if (!res.ok) {
-			auth.set({ access_token: null, exp: null });
+			auth.set({ 
+				access_token: null, 
+				exp: null, 
+				user_uuid: null, 
+				nickname:null 
+			});
 			return;
 		}
 
@@ -57,7 +62,12 @@ export async function initAuth() {
 		  });
 	} catch (err) {
 		console.error('token refresh failed', err);
-		auth.set({ access_token: null, exp: null });
+		auth.set({ 
+			access_token: null, 
+			exp: null, 
+			user_uuid: null, 
+			nickname:null
+		});
 	} finally {
 		refreshing = false;
 	}

@@ -1,12 +1,11 @@
 export interface UserProfile {
   uuid: string;
   nickname: string;
-  name: string;
-  avatar: string;
+  profile_image: string;
   bio?: string;
+  email?: string;
   followerCount: number;
   followingCount: number;
-  monthlyActivityCount: number;
 }
 
 export interface CalendarEvent {
