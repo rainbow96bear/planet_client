@@ -5,12 +5,16 @@
   import Calendar from '$lib/components/common/calendar/Calendar.svelte';
   import FeedCard from '$lib/components/common/feed/FeedCard.svelte';
 	import type { UserProfile } from '$lib/types/profile';
+	import UserProfileHeader from '$lib/components/profile/UserProfileHeader.svelte';
   
   let activeView: 'calendar' | 'feed' = 'calendar';
-  let userNickName: string|undefined;
+  $: userNickName = $page.params.userNickName ?? "";
   
   // 프로필 데이터
   let profile: UserProfile|null = null;
+  let isAuthValid = false;
+  let isMyProfile = false;
+  let isFollowing: boolean | null = null;
   let isLoadingProfile = true;
   
   // 캘린더 데이터
@@ -23,11 +27,23 @@
   let isLoadingFeed = false;
   let feedLoaded = false; // 캐싱 플래그
   
-  onMount(() => {
-    userNickName = $page.params.userNickName;
+  onMount(async () => {
     loadProfile();
     // 첫 로드 시 캘린더 자동 로드
     // loadCalendar();
+
+    if (isAuthValid && $auth.nickname === userNickName) {
+      isMyProfile = true;
+      isFollowing = null;
+    }
+    // 다른 유저 프로필이면 팔로잉 여부 확인
+    else if (isAuthValid) {
+      isFollowing = await fetchIsFollowing(userNickName);
+    }
+    // 비로그인
+    else {
+      isFollowing = null;
+    }
   });
   
   // 프로필 정보 로드
@@ -48,6 +64,23 @@
     }
   }
   
+  async function fetchIsFollowing(nickname: string) {
+    try {
+      const res = await fetch(`/api/profile/${nickname}/follow-status`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${$auth.access_token}`
+        }
+      });
+      if (!res.ok) throw new Error('팔로잉 여부를 확인할 수 없습니다.');
+      const data = await res.json();
+      return data.is_following;
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
+  }
+
   // 캘린더 데이터 로드
   async function loadCalendar() {
     // 이미 로드된 경우 재요청 방지 (캐싱)
@@ -133,46 +166,7 @@
 
 <div class="container">
   <!-- 프로필 헤더 -->
-  {#if isLoadingProfile}
-    <div class="profile-header loading">
-      <div class="loading-spinner">로딩 중...</div>
-    </div>
-  {:else if profile}
-    <div class="profile-header">
-      <div class="bg-decoration decoration-1"></div>
-      <div class="bg-decoration decoration-2"></div>
-      
-      <div class="header-content">
-        <div class="profile-info">
-          <div class="avatar">
-            <!-- <span class="avatar-emoji">{profile.profile_image  || '🪐'}</span> -->
-            <span class="avatar-emoji">{'🪐'}</span>
-          </div>
-          <div class="user-info">
-            <h1 class="username">{profile.nickname}</h1>
-            <p class="handle">{profile.bio}</p>
-          </div>
-        </div>
-        
-        <div class="stats">
-          <div class="stat-item">
-            <div class="stat-value">{profile.followerCount || 0}</div>
-            <div class="stat-label">팔로워</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value">{profile.followingCount || 0}</div>
-            <div class="stat-label">팔로잉</div>
-          </div>
-          <!-- <div class="stat-item">
-            <div class="stat-value">{profile.monthlyEventCount || 0}</div>
-            <div class="stat-label">이번 달</div>
-          </div> -->
-        </div>
-      </div>
-    </div>
-  {:else}
-    <div class="error-message">프로필을 불러올 수 없습니다.</div>
-  {/if}
+  <UserProfileHeader {profile} {isMyProfile} {isFollowing} isLoading={isLoadingProfile} />
 
   <!-- 탭 네비게이션 -->
   <div class="tabs">
@@ -282,117 +276,6 @@
     min-height: 100vh;
   }
 
-  /* 프로필 헤더 */
-  .profile-header {
-    padding: 1.5rem;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-    box-shadow: var(--shadow-lg);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .profile-header.loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 12rem;
-  }
-
-  .loading-spinner {
-    color: white;
-    font-size: 1rem;
-  }
-
-  .bg-decoration {
-    position: absolute;
-    border-radius: 50%;
-    pointer-events: none;
-  }
-
-  .decoration-1 {
-    top: 0;
-    right: 0;
-    width: 10rem;
-    height: 10rem;
-    background: rgba(255, 255, 255, 0.1);
-    filter: blur(60px);
-  }
-
-  .decoration-2 {
-    bottom: 0;
-    left: 0;
-    width: 8rem;
-    height: 8rem;
-    background: rgba(255, 255, 255, 0.05);
-    filter: blur(40px);
-  }
-
-  .header-content {
-    position: relative;
-    z-index: 10;
-  }
-
-  .profile-info {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .avatar {
-    width: 5rem;
-    height: 5rem;
-    border-radius: 50%;
-    background: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: var(--shadow-xl);
-  }
-
-  .avatar-emoji {
-    font-size: 2rem;
-  }
-
-  .user-info {
-    flex: 1;
-  }
-
-  .username {
-    font-size: 1.25rem;
-    font-weight: bold;
-    color: white;
-    margin: 0 0 0.25rem 0;
-  }
-
-  .handle {
-    font-size: 0.875rem;
-    color: rgba(255, 255, 255, 0.8);
-    margin: 0;
-  }
-
-  .stats {
-    display: flex;
-    justify-content: space-around;
-    text-align: center;
-  }
-
-  .stat-item {
-    flex: 1;
-  }
-
-  .stat-value {
-    font-size: 1.125rem;
-    font-weight: bold;
-    color: white;
-  }
-
-  .stat-label {
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.8);
-    margin-top: 0.25rem;
-  }
-
   /* 탭 */
   .tabs {
     background: var(--bg-primary);
@@ -435,28 +318,17 @@
 
   /* 로딩 & 에러 메시지 */
   .loading-message,
-  .empty-message,
-  .error-message {
+  .empty-message{
     text-align: center;
     padding: 3rem 1rem;
     color: var(--text-secondary);
     font-size: 0.9375rem;
   }
 
-  .error-message {
-    color: #EF4444;
-    background: var(--bg-primary);
-    padding: 2rem 1rem;
-  }
-
   /* 반응형 */
   @media (max-width: 768px) {
     .container {
       max-width: 100%;
-    }
-
-    .profile-header {
-      padding: 1rem;
     }
   }
 </style>

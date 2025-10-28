@@ -1,10 +1,9 @@
-import type { RequestHandler } from './$types';
+import type { RequestHandler } from "@sveltejs/kit";
 import type { UserProfile } from '$lib/types/profile';
 // planet_user_server로 profile 정보 요청
 const USER_SERVER_API_URL = process.env.VITE_USER_SERVER_API_URL;
 
 export const GET: RequestHandler = async ({ params }) => {
-  console.log(params.userNickName)
   const res = await fetch(`${USER_SERVER_API_URL}/profile/${params.userNickName}`, {
     method:"GET",
   });
