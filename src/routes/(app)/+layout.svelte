@@ -1,6 +1,7 @@
 <script lang="ts">
   import '$lib/styles/themes.css';
   import { onMount } from 'svelte';
+  import { auth } from '$lib/stores/auth';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
   import { theme } from '$lib/stores/theme';
@@ -39,14 +40,38 @@
   }
 
   onMount(async () => {
-    // 초기 테마 적용
-    const storedTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-theme', storedTheme);
-    theme.setTheme(storedTheme as 'light' | 'dark');
+    const tokenState = get(auth);
+    
+    // 토큰 유효 확인
+    if (tokenState.access_token && isAccessTokenValid()) {
+      try {
+        const res = await fetch('/api/user/theme', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${tokenState.access_token}`
+          }
+        });
 
+        if (res.ok) {
+          const data = await res.json();
+          theme.setTheme(data.theme); // 서버에서 받아온 테마
+        } else {
+          console.warn('Failed to fetch theme, default to light');
+          theme.setTheme('light');
+        }
+      } catch (err) {
+        console.error(err);
+        theme.setTheme('light');
+      }
+    } else {
+      // 토큰 없거나 만료 → 기본 light 테마
+      theme.setTheme('light');
+    }
+
+    // 로그인 상태 표시
     isLoggedIn = isAccessTokenValid();
   });
-   $: currentPath = $page.url.pathname;
+  $: currentPath = $page.url.pathname;
 </script>
 
 <div class="layout">

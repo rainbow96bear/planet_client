@@ -65,11 +65,12 @@
   }
   
   async function fetchIsFollowing(nickname: string) {
+    const tokenState = get(auth);
     try {
       const res = await fetch(`/api/profile/${nickname}/follow-status`, {
         method: 'GET',
         headers: {
-          Authorization: `Bearer ${$auth.access_token}`
+          Authorization: `Bearer ${tokenState.access_token}`
         }
       });
       if (!res.ok) throw new Error('팔로잉 여부를 확인할 수 없습니다.');

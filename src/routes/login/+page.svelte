@@ -5,7 +5,7 @@
   const KakaoOauthProviders : Provider = {
     name: 'Kakao',
     icon: '/oauthBtn/kakaotalk_sharing_btn_medium.png',
-    url: '/api/login/kakao'
+    url: '/api/auth/login/kakao'
   };
 
   function handleLogin(provider: Provider) {
