@@ -87,7 +87,7 @@
 
 <div class="layout">
   <header class="layout-header">
-    <Header {isLoggedIn} />
+    <Header {isLoggedIn} profile={$userProfile}/>
   </header>
 
   <main class="layout-main">

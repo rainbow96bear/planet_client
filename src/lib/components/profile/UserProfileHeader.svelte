@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
   import type { UserProfile } from '$lib/types/profile';
+	import ProfileImg from '../common/profileImg/profileImg.svelte';
 
   export let profile: UserProfile | null;
   export let isLoading: boolean = false;
@@ -22,7 +23,7 @@
     <div class="header-content">
       <div class="profile-info">
         <div class="avatar">
-          <span class="avatar-emoji">{profile.profile_image || '🪐'}</span>
+          <ProfileImg src={profile.profile_image} alt={profile.nickname} size={80} />
         </div>
         <div class="user-info">
           <h1 class="username">{profile.nickname}</h1>

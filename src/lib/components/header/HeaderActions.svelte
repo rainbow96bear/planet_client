@@ -1,9 +1,12 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { goto } from '$app/navigation';
+  import ProfileImg from '../common/profileImg/profileImg.svelte';
+	import type { UserProfile } from '$lib/types/profile';
+
   export let isLoggedIn = false;
+  export let profile:UserProfile|null;
   export let notificationCount = 0;
-  export let userAvatar = '🪐';
   export let isMenuOpen = false; // ✅ 부모에서 전달받음
 
   const dispatch = createEventDispatcher();
@@ -23,7 +26,9 @@
       {/if}
     </button>
     <button class="icon-btn desktop-only" on:click={() => goto('/messages')} title="메시지">💬</button>
-    <button class="avatar-btn" on:click={() => goto('/profile')} title="프로필">{userAvatar}</button>
+    <button class="avatar-btn" on:click={() => goto('/profile')} title="프로필">
+        <ProfileImg src={profile?.profile_image} alt={profile?.nickname} size={40} />
+    </button>
     <button class="menu-btn mobile-only" on:click={handleToggleMenu}>
       {isMenuOpen ? '✕' : '☰'}
     </button>

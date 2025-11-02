@@ -3,10 +3,11 @@
   import SearchBar from './SearchBar.svelte';
   import HeaderActions from './HeaderActions.svelte';
   import MobileMenu from './MobileMenu.svelte';
+	import type { UserProfile } from '$lib/types/profile';
 
   export let isLoggedIn = false;
   export let notificationCount = 0;
-  export let userAvatar = '🪐';
+  export let profile:UserProfile|null;
   export let recentSearches: string[] = [];
 
   let isMenuOpen = false;
@@ -44,7 +45,7 @@
     <HeaderActions
       {isLoggedIn}
       {notificationCount}
-      {userAvatar}
+      {profile}
       {isMenuOpen}
       on:toggleMenu={toggleMenu}
     />

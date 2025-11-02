@@ -4,11 +4,11 @@
 
   export let events: { id: number; title: string; start: number; end: number; visibility: string; emoji: string }[] = [];
   export let completionData: Record<number, number> = {};
+  export let monthData: (number | null)[][] = [];
 
   let currentYear: number;
   let currentMonth: number; // 1~12
-  let monthData: (number | null)[][] = [];
-
+  
   onMount(() => {
     const today = new Date();
     currentYear = today.getFullYear();

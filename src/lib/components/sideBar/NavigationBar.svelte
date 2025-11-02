@@ -2,6 +2,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
 	import type { UserProfile } from '$lib/types/profile';
+	import ProfileImg from '../common/profileImg/profileImg.svelte';
 
   export let currentPath: string = '/';
   export let isLoggedIn: boolean = false;
@@ -50,7 +51,7 @@
 
       <!-- 사용자 정보 -->
       <button class="user-profile" on:click={() => goto('/profile')}>
-        <div class="profile-avatar">🪐</div>
+        <ProfileImg src={profile?.profile_image} alt={profile?.nickname} size={40} />
         <div class="profile-info">
           <div class="profile-name">{profile?.nickname} 프로필</div>
         </div>
@@ -190,17 +191,6 @@
 
   .user-profile:hover {
     background: var(--border-light);
-  }
-
-  .profile-avatar {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
   }
 
   .profile-info {
