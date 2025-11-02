@@ -1,19 +1,23 @@
 <script lang="ts">
   import '$lib/styles/themes.css';
   import { onMount } from 'svelte';
-  import { auth } from '$lib/stores/auth';
+  import { auth, isAccessTokenValid } from '$lib/stores/auth';
+  import { theme } from '$lib/stores/theme';
+  import { userProfile } from '$lib/stores/myProfile';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
-  import { theme } from '$lib/stores/theme';
-	import { isAccessTokenValid } from '$lib/stores/auth';
+
   import Header from '$lib/components/header/Header.svelte';
   import Footer from '$lib/components/footer/Footer.svelte';
   import NavigationBar from '$lib/components/sideBar/NavigationBar.svelte';
-	import TrendingTags from '$lib/components/widget/TrendingTags.svelte';
-  
-  let isLoggedIn = false;
+  import TrendingTags from '$lib/components/widget/TrendingTags.svelte';
 
-   // 추천 사용자
+  let isLoggedIn = false;
+  $: currentPath = $page.url.pathname;
+
+  // -------------------------------
+  //  추천 유저 및 트렌드 태그 더미 데이터
+  // -------------------------------
   const suggestedUsers = [
     { name: '강하늘', handle: '@haneul_cook', avatar: '👨‍🍳', bio: '요리 블로거' },
     { name: '윤서아', handle: '@seoa_art', avatar: '🎨', bio: '일러스트레이터' },
@@ -22,7 +26,6 @@
     { name: '박준영', handle: '@junyoung_photo', avatar: '📷', bio: '사진작가' }
   ];
 
-  // 트렌딩 태그
   const trendingTags = [
     { tag: '운동루틴', count: 1100 },
     { tag: '독서챌린지', count: 856 },
@@ -31,83 +34,96 @@
     { tag: '여행계획', count: 534 }
   ];
 
-  function searchTag(tag: string) {
-    goto(`/search?q=${encodeURIComponent(tag)}`);
-  }
+  // -------------------------------
+  //  공통 함수
+  // -------------------------------
+  const searchTag = (tag: string) => goto(`/search?q=${encodeURIComponent(tag)}`);
+  const followUser = (handle: string) => console.log('팔로우:', handle);
 
-  function followUser(handle: string) {
-    console.log('팔로우:', handle);
-  }
+  onMount(() => {
+    const unsubscribe = auth.subscribe(async (tokenState) => {
+      const token = tokenState?.access_token;
+      isLoggedIn = !!token && isAccessTokenValid();
 
-  onMount(async () => {
-    const tokenState = get(auth);
-    
-    // 토큰 유효 확인
-    if (tokenState.access_token && isAccessTokenValid()) {
+      if (!isLoggedIn) {
+        theme.setTheme('light');
+        userProfile.set(null);
+        return;
+      }
+
       try {
-        const res = await fetch('/api/user/theme', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${tokenState.access_token}`
-          }
+        const res = await fetch('/api/profile/me',{
+          headers: { Authorization: `Bearer ${token}` }
         });
-
         if (res.ok) {
           const data = await res.json();
-          theme.setTheme(data.theme); // 서버에서 받아온 테마
+          userProfile.set(data);
         } else {
-          console.warn('Failed to fetch theme, default to light');
-          theme.setTheme('light');
+          userProfile.set(null);
         }
       } catch (err) {
-        console.error(err);
+        console.error('유저 정보 로드 실패:', err);
+        userProfile.set(null);
+      }
+
+      try {
+        const res = await fetch('/api/user/theme', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          theme.setTheme(data.theme);
+        } else {
+          theme.setTheme('light');
+        }
+      } catch {
         theme.setTheme('light');
       }
-    } else {
-      // 토큰 없거나 만료 → 기본 light 테마
-      theme.setTheme('light');
-    }
+    });
 
-    // 로그인 상태 표시
-    isLoggedIn = isAccessTokenValid();
+    return () => unsubscribe();
   });
-  $: currentPath = $page.url.pathname;
 </script>
 
 <div class="layout">
-  <!-- 상단 헤더 영역 -->
   <header class="layout-header">
-    <Header {isLoggedIn}/>
+    <Header {isLoggedIn} />
   </header>
 
-  <!-- 페이지 콘텐츠 영역 -->
   <main class="layout-main">
     <aside class="left-sidebar">
-     <NavigationBar {currentPath} />
+      {#if isLoggedIn && $userProfile}
+        <NavigationBar {currentPath} {isLoggedIn} profile={$userProfile} />
+      {/if}
     </aside>
-    <slot />
+
+    <div class="main-content">
+      <slot />
+    </div>
+
     <aside class="right-sidebar">
       <div class="sidebar-content">
-        <!-- 검색 -->
-  
+        <TrendingTags {trendingTags} onSelectTag={searchTag} />
 
-        <!-- 트렌딩 태그 -->
-        <TrendingTags {trendingTags} onSelectTag={searchTag}/>
-
-        <!-- 추천 사용자 -->
         <div class="widget suggested-widget">
           <h2 class="widget-title">추천 친구</h2>
           <div class="widget-content">
             {#each suggestedUsers as user}
               <div class="suggested-user">
-                <button class="user-main" on:click={() => goto(`/profile/${user.handle.replace('@', '')}`)}>
+                <button
+                  class="user-main"
+                  on:click={() => goto(`/profile/${user.handle.replace('@', '')}`)}
+                >
                   <div class="user-avatar-small">{user.avatar}</div>
                   <div class="user-info-small">
                     <div class="user-name-small">{user.name}</div>
                     <div class="user-bio">{user.bio}</div>
                   </div>
                 </button>
-                <button class="follow-btn-small" on:click={() => followUser(user.handle)}>
+                <button
+                  class="follow-btn-small"
+                  on:click={() => followUser(user.handle)}
+                >
                   팔로우
                 </button>
               </div>
@@ -119,7 +135,6 @@
     </aside>
   </main>
 
-  <!-- 하단 푸터 영역 -->
   <footer class="layout-footer">
     <Footer />
   </footer>
@@ -132,31 +147,58 @@
     min-height: 100vh;
   }
 
-  .layout-header {
-    flex: 0 0 auto; /* 높이가 고정 */
+  .layout-header,
+  .layout-footer {
+    flex: 0 0 auto;
   }
 
   .layout-main {
     display: flex;
-    flex: 1 1 auto; /* 남은 공간 차지 */
-  }
-
-  .layout-footer {
-    flex: 0 0 auto; /* 높이가 고정 */
+    flex: 1 1 auto;
   }
 
   .left-sidebar {
-    width: 300px;
+    width: 280px;
+    border-right: 1px solid var(--border-light);
+    overflow-y: auto;
+  }
+
+  .main-content {
+    flex: 1 1 auto;
+    min-height: 100%;
+    border-left: 1px solid var(--border-light);
     border-right: 1px solid var(--border-light);
     overflow-y: auto;
   }
 
   .right-sidebar {
-    width: 350px;
+    width: 340px;
     border-right: 1px solid var(--border-light);
     overflow-y: auto;
   }
 
+  /* 반응형 */
+  @media (max-width: 1280px) {
+    .left-sidebar { width: 240px; }
+    .right-sidebar { width: 300px; }
+  }
+
+  @media (max-width: 1024px) {
+    .left-sidebar { width: 200px; }
+    .right-sidebar { display: none; }
+    .main-content { border-right: none; }
+  }
+
+  @media (max-width: 768px) {
+    .left-sidebar { display: none; }
+    .main-content {
+      flex: 1 1 100%;
+      width: 100%;
+      border: none;
+    }
+  }
+
+  /* 위젯 영역 */
   .sidebar-content {
     padding: 1rem;
     display: flex;
@@ -176,12 +218,8 @@
     font-size: 1.125rem;
     font-weight: bold;
     color: var(--text-primary);
-    padding: 1rem 1rem 0.75rem 1rem;
+    padding: 1rem 1rem 0.75rem;
     margin: 0;
-  }
-
-  .widget-content {
-    padding: 0;
   }
 
   .widget-more {
@@ -193,15 +231,9 @@
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
     border-top: 1px solid var(--border-light);
   }
 
-  .widget-more:hover {
-    background: var(--bg-secondary);
-  }
-
-  /* 추천 사용자 */
   .suggested-user {
     display: flex;
     align-items: center;
@@ -238,26 +270,15 @@
     flex-shrink: 0;
   }
 
-  .user-info-small {
-    flex: 1;
-    min-width: 0;
-  }
-
   .user-name-small {
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--text-primary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .user-bio {
     font-size: 0.75rem;
     color: var(--text-secondary);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .follow-btn-small {

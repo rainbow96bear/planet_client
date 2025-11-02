@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Provider } from "LoginProvider";
   import KakaoLoginBtn from "$lib/components/login/kakaoLoginBtn.svelte";
+	import { goto } from "$app/navigation";
 
   const KakaoOauthProviders : Provider = {
     name: 'Kakao',
@@ -27,7 +28,9 @@
       <div class="logo-circle">
         <span class="logo-emoji">🪐</span>
       </div>
-      <h1 class="logo-text">Planet</h1>
+      <button type="button" on:click={() => goto("/")}>
+        <h1>클릭</h1>
+      </button>
       <p class="tagline">당신의 계획이 모여 하나의 행성이 됩니다</p>
     </div>
 

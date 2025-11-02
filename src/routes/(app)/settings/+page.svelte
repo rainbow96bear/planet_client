@@ -1,172 +1,214 @@
 <script lang="ts">
-  import { theme } from '$lib/stores/theme';
-  import { auth } from '$lib/stores/auth';
+  import { onMount } from 'svelte';
+  import { get } from 'svelte/store';
   import { goto } from '$app/navigation';
-  
+  import { theme } from '$lib/stores/theme';
+  import { auth, clearAuth } from '$lib/stores/auth';
+  import { userProfile } from '$lib/stores/myProfile';
+  import ThemeSelector from '$lib/components/common/themeSelector/ThemeSelector.svelte';
+
   let currentTheme: 'light' | 'dark' = 'light';
-  
-  // 현재 테마 구독
-  theme.subscribe(value => {
-    currentTheme = value;
-  });
-  
-  function handleThemeChange(newTheme: 'light' | 'dark') {
+  let isLoggedIn = false;
+  let profile = $userProfile; // ✅ store 데이터 자동 구독
+  // 테마 변경 처리
+  async function handleThemeChange(event: CustomEvent<{ theme: 'light' | 'dark' }>) {
+    const newTheme = event.detail.theme;
     theme.setTheme(newTheme);
+
     const tokenState = get(auth);
+    if (!tokenState?.access_token) return;
+
     try {
-      const res = await fetch(`/api/user/theme`, {
+      await fetch('/api/user/theme', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization':  `Bearer ${tokenState.access_token}`
+          Authorization: `Bearer ${tokenState.access_token}`,
         },
-        body: JSON.stringify({ theme: newTheme })
+        body: JSON.stringify({ theme: newTheme }),
       });
-
-      if (!res.ok) {
-        throw new Error(`테마 저장 실패: ${res.status}`);
-      }
     } catch (err) {
       console.error(err);
     }
   }
-  
+
+  // 로그아웃 처리
   async function handleLogout() {
-    // 로그아웃 API 호출
     try {
-      await fetch('/api/user/logout', { method: 'POST' });
+      const tokenState = get(auth);
+
+      await fetch('/api/user/logout', {
+        method: 'POST',
+        headers: tokenState
+          ? { Authorization: `Bearer ${tokenState.access_token}` }
+          : {},
+        credentials: 'include',
+      });
+
+      clearAuth();
+      userProfile.set(null); // ✅ 로그아웃 시 프로필 초기화
       goto('/');
     } catch (err) {
       console.error('로그아웃 실패:', err);
     }
   }
 
+  // 로그인 여부 및 프로필 로드
   onMount(() => {
-    if (!get(accessToken)) {
-      showNotice = true;
-      setTimeout(() => {
-        showNotice = false;
-        goto('/login');
-      }, 1000); // 1초 후 이동
+    const tokenState = get(auth);
+    if (!tokenState?.access_token) {
+      isLoggedIn = false;
+      goto('/login');
+      return;
     }
+
+    // 로그인 상태면 isLoggedIn true
+    isLoggedIn = true;
+
+    // store 구독
+    const unsubscribe = userProfile.subscribe((value) => {
+      profile = value;
+      console.log('profile 업데이트:', value);
+    });
+
+    return () => unsubscribe();
   });
 </script>
 
-<div class="container">
-  {#if showNotice}
+<div class="settings-container">
+  {#if !isLoggedIn || !profile}
     <div class="overlay">
-      <div class="login-notice">
-        로그인이 필요합니다.
-      </div>
+      <div class="notice">로그인이 필요합니다.</div>
     </div>
   {:else}
-    <!-- 헤더 -->
-    <div class="header">
-      <button class="back-btn" on:click={() => goto('/profile')}>
-        ← 뒤로
-      </button>
-      <h1 class="title">설정</h1>
-      <div></div>
-    </div>
+    <!-- Header -->
+    <header class="settings-header">
+      <button class="back-btn" on:click={() => history.back()}>← 뒤로</button>
+      <h1 class="header-title">설정</h1>
+      <div class="header-placeholder"></div>
+    </header>
 
-    <!-- 설정 카드 -->
-    <div class="content">
-      <!-- 프로필 섹션 -->
-      <div class="section">
+    <!-- Content -->
+    <main class="settings-content">
+      <!-- 프로필 -->
+      <section class="section">
         <h2 class="section-title">프로필</h2>
-        <div class="card">
-          <div class="profile-preview">
-            <div class="avatar">🪐</div>
-            <div class="user-info">
-              <div class="username">김지현</div>
-              <div class="handle">@jihyun_daily</div>
+        <div class="card profile-card">
+          <div class="profile-info">
+            <div class="avatar">
+              {#if profile.profile_image}
+                <img src={profile.profile_image} alt="프로필" style="width:100%; height:100%; border-radius:50%;" />
+              {:else}
+                🪐
+              {/if}
+            </div>
+            <div class="user-details">
+              <div class="username">{profile.nickname}</div>
             </div>
           </div>
-          <button class="edit-btn">프로필 수정</button>
+          <!--
+          <button class="edit-btn" on:click={() => goto('/profile/edit')}>프로필 수정</button>
+          -->
         </div>
-      </div>
+      </section>
 
-      <!-- 테마 섹션 -->
-      <div class="section">
-        <h2 class="section-title">테마 설정</h2>
-        <ThemeSelector {currentTheme} on:change={handleThemeChange} />
-      </div>
+      <!-- 테마 설정 -->
+      <section class="section">
+        <h2 class="section-title">테마</h2>
+        <ThemeSelector currentTheme={$theme} on:change={handleThemeChange} />
+      </section>
 
-      <!-- 계정 섹션 -->
-      <div class="section">
+      <!-- 계정 -->
+      <!--
+      <section class="section">
         <h2 class="section-title">계정</h2>
         <div class="card">
           <button class="menu-item">
-            <span>알림 설정</span>
-            <span class="arrow">→</span>
+            <span>알림 설정</span><span class="arrow">→</span>
           </button>
           <div class="divider"></div>
           <button class="menu-item">
-            <span>차단 목록</span>
-            <span class="arrow">→</span>
+            <span>차단 목록</span><span class="arrow">→</span>
           </button>
           <div class="divider"></div>
           <button class="menu-item">
-            <span>개인정보 설정</span>
-            <span class="arrow">→</span>
+            <span>개인정보 설정</span><span class="arrow">→</span>
           </button>
         </div>
-      </div>
-
-      <!-- 정보 섹션 -->
-      <div class="section">
+      </section>
+      -->
+      <!-- 정보 -->
+      <!--
+      <section class="section">
         <h2 class="section-title">정보</h2>
         <div class="card">
           <button class="menu-item">
-            <span>서비스 약관</span>
-            <span class="arrow">→</span>
+            <span>서비스 약관</span><span class="arrow">→</span>
           </button>
           <div class="divider"></div>
           <button class="menu-item">
-            <span>개인정보 처리방침</span>
-            <span class="arrow">→</span>
+            <span>개인정보 처리방침</span><span class="arrow">→</span>
           </button>
           <div class="divider"></div>
           <button class="menu-item">
-            <span>버전 정보</span>
-            <span class="version">v1.0.0</span>
+            <span>버전 정보</span><span class="version">v1.0.0</span>
           </button>
         </div>
-      </div>
+      </section>
+      -->
 
-      <!-- 로그아웃 버튼 -->
-      <button class="logout-btn" on:click={handleLogout}>
-        로그아웃
-      </button>
-    </div>
+      <!-- 로그아웃 -->
+      <button class="logout-btn" on:click={handleLogout}>로그아웃</button>
+    </main>
   {/if}
 </div>
 
 <style>
-  .container {
-    width: 100%;
-    margin: 0 auto;
+  /* 전체 컨테이너 */
+  .settings-container {
     min-height: 100vh;
     background: linear-gradient(to bottom, var(--bg-gradient-start), var(--bg-gradient-end));
+    color: var(--text-primary);
+    transition: background 0.3s ease, color 0.3s ease;
   }
 
-  /* 헤더 */
-  .header {
+  /* 오버레이 */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
     display: flex;
+    justify-content: center;
     align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.5rem;
+    z-index: 9999;
+  }
+
+  .notice {
     background: var(--bg-primary);
-    border-bottom: 1px solid var(--border-light);
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: var(--shadow-md);
+    font-weight: 600;
+    text-align: center;
+  }
+
+  /* Header */
+  .settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: var(--header-bg);
+    border-bottom: 1px solid var(--header-border);
+    backdrop-filter: blur(var(--header-blur));
     position: sticky;
     top: 0;
     z-index: 10;
   }
 
   .back-btn {
-    padding: 0.5rem;
-    border: none;
     background: none;
+    border: none;
     font-size: 1rem;
     color: var(--text-primary);
     cursor: pointer;
@@ -177,16 +219,18 @@
     opacity: 0.7;
   }
 
-  .title {
+  .header-title {
     font-size: 1.125rem;
     font-weight: bold;
-    color: var(--text-primary);
-    margin: 0;
   }
 
-  /* 콘텐츠 */
-  .content {
-    padding: 1rem;
+  .header-placeholder {
+    width: 2rem;
+  }
+
+  /* Content */
+  .settings-content {
+    padding: 1rem 1.25rem;
   }
 
   .section {
@@ -208,93 +252,94 @@
     padding: 1rem;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 
-  /* 프로필 프리뷰 */
-  .profile-preview {
+  /* 프로필 카드 */
+  .profile-card {
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .profile-info {
     display: flex;
     align-items: center;
     gap: 1rem;
-    margin-bottom: 1rem;
   }
 
   .avatar {
-    width: 3.5rem;
-    height: 3.5rem;
+    width: 3rem;
+    height: 3rem;
     border-radius: 50%;
     background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.75rem;
+    font-size: 1.5rem;
   }
 
-  .user-info {
-    flex: 1;
+  .user-details {
+    display: flex;
+    flex-direction: column;
   }
 
   .username {
-    font-size: 1rem;
     font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.25rem;
   }
 
   .handle {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
   }
 
   .edit-btn {
-    width: 100%;
-    padding: 0.75rem;
+    padding: 0.5rem 1rem;
     border-radius: 0.75rem;
-    border: 1px solid var(--border-color);
-    background: var(--bg-secondary);
-    color: var(--text-primary);
+    border: 1px solid var(--color-primary);
+    background: var(--bg-primary);
+    color: var(--color-primary);
     font-weight: 600;
-    font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.2s;
   }
 
   .edit-btn:hover {
-    border-color: var(--color-primary);
-    background: var(--bg-primary);
+    background: var(--bg-secondary);
   }
 
   /* 메뉴 아이템 */
   .menu-item {
-    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 0;
+    padding: 0.75rem;
     border: none;
     background: none;
-    font-size: 0.875rem;
-    color: var(--text-primary);
+    font-size: 0.9375rem;
     cursor: pointer;
-    transition: opacity 0.2s;
+    border-radius: 0.75rem;
+    transition: background 0.2s;
   }
 
   .menu-item:hover {
-    opacity: 0.7;
-  }
-
-  .arrow {
-    color: var(--text-tertiary);
-    font-size: 1rem;
-  }
-
-  .version {
-    color: var(--text-tertiary);
-    font-size: 0.75rem;
+    background: var(--bg-secondary);
   }
 
   .divider {
     height: 1px;
     background: var(--border-light);
+    margin: 0.25rem 0;
+  }
+
+  .arrow {
+    color: var(--text-tertiary);
+  }
+
+  .version {
+    color: var(--text-tertiary);
+    font-size: 0.875rem;
   }
 
   /* 로그아웃 버튼 */
@@ -306,7 +351,6 @@
     background: var(--bg-primary);
     color: #EF4444;
     font-weight: 600;
-    font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.2s;
     margin-top: 1rem;
@@ -314,26 +358,5 @@
 
   .logout-btn:hover {
     background: #FEF2F2;
-  }
-
-  .overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-  }
-
-  .login-notice {
-    background-color: white;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    text-align: center;
   }
 </style>

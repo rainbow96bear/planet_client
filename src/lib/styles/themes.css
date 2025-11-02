@@ -3,23 +3,28 @@
   --color-primary: #7DBDB6;
   --color-secondary: #8B9DC3;
   --color-accent: #B8A4C9;
-  
+
   --bg-primary: #FFFFFF;
   --bg-secondary: #F9FAFB;
   --bg-gradient-start: #E8F3F1;
   --bg-gradient-end: #F0F0FF;
-  
+
   --text-primary: #111827;
   --text-secondary: #6B7280;
   --text-tertiary: #9CA3AF;
-  
+
   --border-color: rgba(125, 189, 182, 0.2);
   --border-light: #E5E7EB;
-  
+
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.08);
   --shadow-xl: 0 20px 60px rgba(125, 189, 182, 0.3);
+
+  /* ✅ 헤더 전용 색상 (밝은 테마용) */
+  --header-bg: rgba(255, 255, 255, 0.8);
+  --header-border: rgba(125, 189, 182, 0.25);
+  --header-blur: 10px;
 }
 
 :root[data-theme="dark"] {
@@ -27,26 +32,31 @@
   --color-primary: #7DBDB6;
   --color-secondary: #8B9DC3;
   --color-accent: #B8A4C9;
-  
+
   --bg-primary: #1F2937;
   --bg-secondary: #111827;
   --bg-gradient-start: #0F172A;
   --bg-gradient-end: #1E293B;
-  
+
   --text-primary: #F9FAFB;
   --text-secondary: #D1D5DB;
   --text-tertiary: #9CA3AF;
-  
+
   --border-color: rgba(125, 189, 182, 0.3);
   --border-light: #374151;
-  
+
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.5);
   --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.6);
+
+  /* ✅ 헤더 전용 색상 (어두운 테마용) */
+  --header-bg: rgba(31, 41, 55, 0.75);
+  --header-border: rgba(125, 189, 182, 0.2);
+  --header-blur: 12px;
 }
 
-/* 전역 스타일 */
+/* 전역 배경 */
 body {
   margin: 0;
   background: linear-gradient(to bottom, var(--bg-gradient-start), var(--bg-gradient-end));

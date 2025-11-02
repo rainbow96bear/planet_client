@@ -1,12 +1,55 @@
 <script lang="ts">
   import PlanCard from '$lib/components/common/plan/PlanCard.svelte';
+  import { onMount } from 'svelte';
 
   export let events: { id: number; title: string; start: number; end: number; visibility: string; emoji: string }[] = [];
-  export let monthData: (number | null)[][] = [];
   export let completionData: Record<number, number> = {};
 
+  let currentYear: number;
+  let currentMonth: number; // 1~12
+  let monthData: (number | null)[][] = [];
+
+  onMount(() => {
+    const today = new Date();
+    currentYear = today.getFullYear();
+    currentMonth = today.getMonth() + 1;
+    updateMonthData();
+  });
+
+  function updateMonthData() {
+    const firstDay = new Date(currentYear, currentMonth - 1, 1).getDay();
+    const lastDate = new Date(currentYear, currentMonth, 0).getDate();
+    const weeks: (number | null)[][] = [];
+    let week: (number | null)[] = Array(firstDay).fill(null);
+
+    for (let day = 1; day <= lastDate; day++) {
+      week.push(day);
+      if (week.length === 7) {
+        weeks.push(week);
+        week = [];
+      }
+    }
+    if (week.length > 0) {
+      week = week.concat(Array(7 - week.length).fill(null));
+      weeks.push(week);
+    }
+    monthData = weeks;
+  }
+
+  function prevMonth() {
+    if (currentMonth === 1) { currentMonth = 12; currentYear--; }
+    else currentMonth--;
+    updateMonthData();
+  }
+
+  function nextMonth() {
+    if (currentMonth === 12) { currentMonth = 1; currentYear++; }
+    else currentMonth++;
+    updateMonthData();
+  }
+
   function getEventsForDay(day: number) {
-    return events.filter(event => day >= event.start && day <= event.end);
+    return events.filter(e => day >= e.start && day <= e.end);
   }
 
   function getEmojisForDay(day: number) {
@@ -15,7 +58,7 @@
   }
 
   function getCompletionStyle(completion: number) {
-    if (completion === 0) return '#F9FAFB';
+    if (completion === 0) return 'var(--bg-secondary)';
     if (completion < 50) return 'rgba(125,189,182,0.1)';
     if (completion < 80) return 'rgba(125,189,182,0.2)';
     return 'linear-gradient(135deg, rgba(125,189,182,0.3), rgba(139,157,195,0.3))';
@@ -25,15 +68,14 @@
 <div class="calendar-view">
   <div class="calendar-card">
     <div class="calendar-header">
-      <h2 class="calendar-title">10월 2025</h2>
-      <div class="calendar-subtitle">전체 활동량</div>
+      <button class="nav-btn" on:click={prevMonth}>&lt;</button>
+      <div class="calendar-title">{currentYear}년 {currentMonth}월</div>
+      <button class="nav-btn" on:click={nextMonth}>&gt;</button>
     </div>
 
     <div class="weekdays">
-      {#each ['일', '월', '화', '수', '목', '금', '토'] as day, idx}
-        <div class="weekday" class:sunday={idx === 0} class:saturday={idx === 6}>
-          {day}
-        </div>
+      {#each ['일','월','화','수','목','금','토'] as day, idx}
+        <div class="weekday" class:sunday={idx===0} class:saturday={idx===6}>{day}</div>
       {/each}
     </div>
 
@@ -47,16 +89,12 @@
                 {@const completion = completionData[day] || 0}
                 {@const isSunday = dayIdx === 0}
                 {@const isSaturday = dayIdx === 6}
-
                 <div class="day-cell" style="background: {getCompletionStyle(completion)}">
-                  <span class="day-number" class:sunday={isSunday} class:saturday={isSaturday}>
-                    {day}
-                  </span>
+                  <span class="day-number" class:sunday={isSunday} class:saturday={isSaturday}>{day}</span>
                   {#if emojis.length > 0}
                     <div class="day-emojis">
-                      {#each emojis as emoji}
-                        <span>{emoji}</span>
-                      {/each}
+                      {#each emojis as emoji}<span>{emoji}</span>{/each}
+                      {#if getEventsForDay(day).length > 2}<span>...</span>{/if}
                     </div>
                   {/if}
                 </div>
@@ -79,11 +117,8 @@
 </div>
 
 <style>
-.calendar-view {
-  padding: 1rem 0;
-}
+.calendar-view { padding: 1rem 0; }
 
-/* 캘린더 카드 */
 .calendar-card {
   background: var(--bg-primary);
   border-radius: 1rem;
@@ -97,23 +132,19 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 0.25rem;
 }
 
-.calendar-title {
-  font-size: 1.125rem;
-  font-weight: bold;
+.nav-btn {
+  border: none;
+  background: none;
+  font-size: 1.25rem;
+  cursor: pointer;
   color: var(--text-primary);
-  margin: 0;
 }
 
-.calendar-subtitle {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--color-primary);
-}
+.calendar-title { font-size: 1.125rem; font-weight: bold; color: var(--text-primary); }
 
-/* 요일 */
 .weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -121,37 +152,13 @@
   margin-bottom: 0.5rem;
 }
 
-.weekday {
-  text-align: center;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
+.weekday { text-align: center; font-size: 0.75rem; font-weight: 500; color: var(--text-secondary); }
+.weekday.sunday { color: #F87171; }
+.weekday.saturday { color: var(--color-secondary); }
 
-.weekday.sunday {
-  color: #F87171;
-}
-
-.weekday.saturday {
-  color: var(--color-secondary);
-}
-
-/* 날짜 */
-.calendar-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.calendar-row {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 0.5rem;
-}
-
-.calendar-cell {
-  aspect-ratio: 1;
-}
+.calendar-grid { display: flex; flex-direction: column; gap: 0.5rem; }
+.calendar-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; }
+.calendar-cell { aspect-ratio: 1; }
 
 .day-cell {
   width: 100%;
@@ -163,48 +170,23 @@
   justify-content: center;
   cursor: pointer;
   transition: transform 0.2s;
-}
-
-.day-cell:hover {
-  transform: scale(1.05);
-}
-
-.day-number {
-  font-size: clamp(0.75rem, 2vw, 1rem);
-  font-weight: 500;
   color: var(--text-primary);
-  margin-bottom: 0.125rem;
 }
+.day-cell:hover { transform: scale(1.05); }
 
-.day-number.sunday {
-  color: #F87171;
-}
-
-.day-number.saturday {
-  color: var(--color-secondary);
-}
+.day-number { font-size: clamp(0.75rem, 2vw, 1rem); font-weight: 500; color: var(--text-primary); margin-bottom: 0.125rem; }
+.day-number.sunday { color: #F87171; }
+.day-number.saturday { color: var(--color-secondary); }
 
 .day-emojis {
   display: flex;
   gap: 0.125rem;
   font-size: clamp(0.75rem, 1.5vw, 1rem);
+  color: var(--text-primary);
 }
 
 /* 이번 달 계획 */
-.plans-section {
-  margin-top: 1rem;
-}
-
-.plans-title {
-  font-size: 0.875rem;
-  font-weight: bold;
-  color: var(--text-primary);
-  margin: 0 0 0.75rem 0.25rem;
-}
-
-.plans-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
+.plans-section { margin-top: 1rem; }
+.plans-title { font-size: 0.875rem; font-weight: bold; color: var(--text-primary); margin: 0 0 0.75rem 0.25rem; }
+.plans-list { display: flex; flex-direction: column; gap: 0.5rem; }
 </style>

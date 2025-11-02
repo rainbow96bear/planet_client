@@ -8,6 +8,15 @@ interface AuthState {
   nickname: string | null;
 }
 
+export function clearAuth() {
+  auth.set({
+    access_token: null,
+    exp: null,
+    user_uuid: null,
+    nickname: null
+  });
+}
+
 export const auth = writable<AuthState>({
   access_token: null,
   exp: null,
@@ -15,60 +24,54 @@ export const auth = writable<AuthState>({
   nickname: null,
 });
 
-export function isAccessTokenValid(): boolean {
-	let valid = false;
-	auth.update((a:any) => {
-		if (a.access_token && a.exp) {
-			// 만료 30초 전까지는 유효하다고 간주
-			valid = Date.now() < a.exp * 1000 - 30_000;
-		}
-		return a;
-	});
-	return valid;
-}
-
 let refreshing = false;
 
-export async function initAuth() {
-	if (refreshing) return;
-	if (isAccessTokenValid()) return;
+export async function initAuth(options?: { fetch?: typeof window.fetch }) {
+    if (refreshing) return;
+    
+    let tokenValue: any;
+    auth.subscribe(v => tokenValue = v)();
+    if (tokenValue.access_token && isAccessTokenValid()) return;
 
-	refreshing = true;
+    refreshing = true;
 
-	try {
-		const res = await fetch('/api/auth/token/access', {
-			method: 'POST',
-			credentials: 'include' // HttpOnly refresh token 쿠키 전송
-		});
+    try {
+        const res = await (options?.fetch ?? fetch)('/api/auth/token/access', {
+            method: 'POST',
+            credentials: 'include'
+        });
 
-		if (!res.ok) {
-			auth.set({ 
-				access_token: null, 
-				exp: null, 
-				user_uuid: null, 
-				nickname:null 
-			});
-			return;
-		}
+        if (!res.ok) {
+            auth.set({ access_token: null, exp: null, user_uuid: null, nickname: null });
+            return;
+        }
 
-		  const data = await res.json();
-		  const decoded: any = jwtDecode(data.access_token);
-		  const exp = Math.floor(new Date(decoded.exp).getTime() / 1000);
-		  auth.set({
-		  	access_token: data.access_token,
-			exp: exp,
-			user_uuid: decoded.user_uuid,
-			nickname: decoded.nickname,
-		  });
-	} catch (err) {
-		console.error('token refresh failed', err);
-		auth.set({ 
-			access_token: null, 
-			exp: null, 
-			user_uuid: null, 
-			nickname:null
-		});
-	} finally {
-		refreshing = false;
-	}
+        const data = await res.json();
+        const decoded: any = jwtDecode(data.access_token);
+        console.log("decoded : ", decoded)
+        auth.set({
+            access_token: data.access_token,
+            exp: decoded.exp,
+            user_uuid: decoded.user_uuid,
+            nickname: decoded.nickname
+        });
+    } catch (err) {
+        console.error(err);
+        auth.set({ access_token: null, exp: null, user_uuid: null, nickname: null });
+    } finally {
+        refreshing = false;
+    }
 }
+
+export function isAccessTokenValid() {
+  let value: any;
+  auth.subscribe(v => value = v)();
+
+  if (!value?.access_token || typeof value.exp !== 'number') {
+    return false;
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  return now < value.exp;
+}
+

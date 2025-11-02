@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
   import type { UserProfile } from '$lib/types/profile';
 
   export let profile: UserProfile | null;
@@ -30,7 +31,16 @@
         <!-- 버튼 영역 -->
         <div class="actions">
           {#if isMyProfile}
-            <button class="btn btn-secondary">설정</button>
+            <!-- 캘린더 일정 추가 버튼 -->
+            <button class="btn btn-primary" on:click={() => goto(`/profile/${profile?.nickname}/calendar/new`)}>
+              일정 추가
+            </button>
+            <!-- 피드 작성 버튼 -->
+            <button class="btn btn-primary" on:click={() => goto(`/profile/${profile?.nickname}/feed/new`)}>
+              피드 작성
+            </button>
+            <!-- 설정 버튼 -->
+            <button class="btn btn-secondary" on:click={() => goto('/settings')}>설정</button>
           {:else if isFollowing === true}
             <button class="btn btn-danger">언팔로우</button>
           {:else if isFollowing === false}

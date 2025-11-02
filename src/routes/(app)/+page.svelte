@@ -60,25 +60,6 @@
 
   let selectedFilter: 'all' | 'following' | 'popular' = 'all';
 
-  function handleLike(event: CustomEvent) {
-    console.log('좋아요:', event.detail.feedId);
-  }
-
-  function handleComment(event: CustomEvent) {
-    goto(`/feed/${event.detail.feedId}`);
-  }
-
-  function handleBookmark(event: CustomEvent) {
-    console.log('북마크:', event.detail.feedId);
-  }
-
-  function handleShare(event: CustomEvent) {
-    console.log('공유:', event.detail.feedId);
-  }
-
-  function handleMore(event: CustomEvent) {
-    console.log('더보기:', event.detail.feedId);
-  }
 
 </script>
 

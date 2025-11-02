@@ -1,9 +1,11 @@
 <!-- src/lib/components/layout/LeftSidebar.svelte -->
 <script lang="ts">
   import { goto } from '$app/navigation';
+	import type { UserProfile } from '$lib/types/profile';
 
   export let currentPath: string = '/';
-
+  export let isLoggedIn: boolean = false;
+  export let profile:UserProfile|null=null;
   function isActive(path: string) {
     return currentPath === path;
   }
@@ -16,49 +18,44 @@
         <span class="nav-icon">🌍</span>
         <span class="nav-text">탐색</span>
       </button>
+      {#if isLoggedIn}
+        <button class="nav-item" class:active={isActive('/notifications')} on:click={() => goto('/notifications')}>
+          <span class="nav-icon">🔔</span>
+          <span class="nav-text">알림</span>
+        </button>
 
-      <button class="nav-item" class:active={isActive('/notifications')} on:click={() => goto('/notifications')}>
-        <span class="nav-icon">🔔</span>
-        <span class="nav-text">알림</span>
-      </button>
+        <button class="nav-item" class:active={isActive('/messages')} on:click={() => goto('/messages')}>
+          <span class="nav-icon">💬</span>
+          <span class="nav-text">메시지</span>
+        </button>
 
-      <button class="nav-item" class:active={isActive('/messages')} on:click={() => goto('/messages')}>
-        <span class="nav-icon">💬</span>
-        <span class="nav-text">메시지</span>
-      </button>
+        <button class="nav-item" class:active={isActive('/bookmarks')} on:click={() => goto('/bookmarks')}>
+          <span class="nav-icon">🔖</span>
+          <span class="nav-text">북마크</span>
+        </button>
 
-      <button class="nav-item" class:active={isActive('/bookmarks')} on:click={() => goto('/bookmarks')}>
-        <span class="nav-icon">🔖</span>
-        <span class="nav-text">북마크</span>
-      </button>
-
-      <button class="nav-item" class:active={isActive('/profile')} on:click={() => goto('/profile')}>
-        <span class="nav-icon">🪐</span>
-        <span class="nav-text">프로필</span>
-      </button>
-
-      <button class="nav-item" class:active={isActive('/settings')} on:click={() => goto('/settings')}>
-        <span class="nav-icon">⚙️</span>
-        <span class="nav-text">설정</span>
-      </button>
+        <button class="nav-item" class:active={isActive('/settings')} on:click={() => goto('/settings')}>
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-text">설정</span>
+        </button>
+      {/if}
     </nav>
 
+    {#if isLoggedIn}
+      <!-- 새 글 작성 버튼 -->
+      <button class="create-btn" on:click={() => goto('/create')}>
+        <span class="create-icon">✏️</span>
+        <span>새 할 일 작성</span>
+      </button>
 
-    <!-- 새 글 작성 버튼 -->
-    <button class="create-btn" on:click={() => goto('/create')}>
-      <span class="create-icon">✏️</span>
-      <span>새 할 일 작성</span>
-    </button>
-
-    <!-- 사용자 정보 -->
-    <button class="user-profile" on:click={() => goto('/profile')}>
-      <div class="profile-avatar">🪐</div>
-      <div class="profile-info">
-        <div class="profile-name">김지현</div>
-        <div class="profile-handle">@jihyun_daily</div>
-      </div>
-      <div class="profile-more">⋯</div>
-    </button>
+      <!-- 사용자 정보 -->
+      <button class="user-profile" on:click={() => goto('/profile')}>
+        <div class="profile-avatar">🪐</div>
+        <div class="profile-info">
+          <div class="profile-name">{profile?.nickname} 프로필</div>
+        </div>
+      </button>
+    {/if}
   </div>
 
 <style>
