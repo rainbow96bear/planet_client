@@ -86,7 +86,7 @@
 
     isLoadingCalendar = true;
     try {
-      const res = await fetch(`/api/profile/${userNickName}/calendar`);
+      const res = await fetch(`/api/calendar/user/${userNickName}`);
       if (!res.ok) throw new Error('캘린더 조회 실패');
 
       calendarData = await res.json();
@@ -104,7 +104,7 @@
 
     isLoadingFeed = true;
     try {
-      const res = await fetch(`/api/profile/${userNickName}/feeds`);
+      const res = await fetch(`/api/feeds/user/${userNickName}`);
       if (!res.ok) throw new Error('피드 조회 실패');
 
       feedData = await res.json();
