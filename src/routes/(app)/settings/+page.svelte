@@ -4,7 +4,7 @@
   import { goto } from '$app/navigation';
   import { theme } from '$lib/stores/theme';
   import { auth, clearAuth } from '$lib/stores/auth';
-  import { userProfile } from '$lib/stores/myProfile';
+  import { userProfile } from '$lib/stores/userProfile';
   import ThemeSelector from '$lib/components/common/themeSelector/ThemeSelector.svelte';
 
   let currentTheme: 'light' | 'dark' = 'light';

@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { theme } from '$lib/stores/theme';
-  import { get } from 'svelte/store';
   import { createEventDispatcher } from 'svelte';
 
   export let currentTheme: 'light' | 'dark' = 'light';

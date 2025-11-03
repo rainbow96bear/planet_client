@@ -3,7 +3,7 @@
   import { onMount } from 'svelte';
   import { auth, isAccessTokenValid } from '$lib/stores/auth';
   import { theme } from '$lib/stores/theme';
-  import { userProfile } from '$lib/stores/myProfile';
+  import { userProfile } from '$lib/stores/userProfile';
   import { goto } from '$app/navigation';
   import { page } from '$app/stores';
 

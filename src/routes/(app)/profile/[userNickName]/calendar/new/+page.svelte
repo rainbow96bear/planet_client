@@ -1,7 +1,7 @@
 <script lang="ts">
-  import CalendarForm from '$lib/components/CalendarForm.svelte';
+  import CalendarForm from '$lib/components/common/calendar/CalendarForm.svelte';
   import { goto } from '$app/navigation';
-  import { get } from 'svelte';
+  import { get } from 'svelte/store';
   import { auth, clearAuth } from '$lib/stores/auth';
   import { userProfile } from '$lib/stores/userProfile';
 
