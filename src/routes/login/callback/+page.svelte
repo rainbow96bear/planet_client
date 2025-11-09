@@ -3,6 +3,7 @@
   import { goto } from '$app/navigation';
 	import { auth } from '$lib/stores/auth';
   import {jwtDecode} from 'jwt-decode';
+	import LoadingSpinner from '$lib/components/common/loadingSpinner/LoadingSpinner.svelte';
 
   onMount(async () => {
     const url = new URL(window.location.href);
@@ -25,5 +26,4 @@
     }
   });
 </script>
-
-<p>로그인 처리 중...</p>
+<LoadingSpinner message="로그인 처리 중..."/>

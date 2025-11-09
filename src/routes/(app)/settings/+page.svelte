@@ -167,7 +167,6 @@
   /* 전체 컨테이너 */
   .settings-container {
     min-height: 100vh;
-    background: linear-gradient(to bottom, var(--bg-gradient-start), var(--bg-gradient-end));
     color: var(--text-primary);
     transition: background 0.3s ease, color 0.3s ease;
   }

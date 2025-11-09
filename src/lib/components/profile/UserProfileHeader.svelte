@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
   import type { UserProfile } from '$lib/types/profile';
+	import LoadingSpinner from '../common/loadingSpinner/LoadingSpinner.svelte';
 	import ProfileImg from '../common/profileImg/profileImg.svelte';
 
   export let profile: UserProfile | null;
@@ -13,7 +14,7 @@
 
 {#if isLoading}
   <div class="profile-header loading">
-    <div class="loading-spinner">로딩 중...</div>
+    <LoadingSpinner message="로딩 중..."/>
   </div>
 {:else if profile}
   <div class="profile-header">
@@ -33,11 +34,11 @@
         <div class="actions">
           {#if isMyProfile}
             <!-- 캘린더 일정 추가 버튼 -->
-            <button class="btn btn-primary" on:click={() => goto(`/profile/${profile?.nickname}/calendar/new`)}>
+            <button class="btn btn-primary" on:click={() => goto(`/calendar/new`)}>
               일정 추가
             </button>
             <!-- 피드 작성 버튼 -->
-            <button class="btn btn-primary" on:click={() => goto(`/profile/${profile?.nickname}/feed/new`)}>
+            <button class="btn btn-primary" on:click={() => goto(`/feed/new`)}>
               피드 작성
             </button>
             <!-- 설정 버튼 -->

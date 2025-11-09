@@ -8,6 +8,7 @@
   import FeedCard from '$lib/components/common/feed/FeedCard.svelte';
   import UserProfileHeader from '$lib/components/profile/UserProfileHeader.svelte';
   import type { UserProfile } from '$lib/types/profile';
+  import LoadingSpinner from '$lib/components/common/loadingSpinner/LoadingSpinner.svelte';
 
   let activeView: 'calendar' | 'feed' = 'calendar';
   $: userNickName = $page.params.userNickName ?? '';
@@ -18,17 +19,16 @@
   let isFollowing: boolean | null = null;
   let isLoadingProfile = true;
 
-  let calendarData: any = null;
-  let isLoadingCalendar = false;
-  let calendarLoaded = false;
+  let calendarData: {
+    events: { id: number; title: string; start_at: string; end_at: string; visibility: 'public' | 'friends' | 'private'; emoji: string }[];
+    monthData: (number | null)[][];
+    completionData: Record<number, number>;
+  } = { events: [], monthData: [], completionData: {} };
 
+  let isLoadingCalendar = false;
   let feedData: any[] = [];
   let isLoadingFeed = false;
-  let feedLoaded = false;
 
-  // -------------------------------
-  // 라이프사이클
-  // -------------------------------
   onMount(async () => {
     const token = get(auth)?.access_token;
     isAuthValid = !!token;
@@ -40,20 +40,16 @@
       isFollowing = null;
     } else if (isAuthValid) {
       isFollowing = await fetchIsFollowing(userNickName);
-    } else {
-      isFollowing = null;
     }
+
+    if (activeView === 'calendar') await loadCalendar();
   });
 
-  // -------------------------------
-  // 데이터 로드 함수
-  // -------------------------------
   async function loadProfile() {
     isLoadingProfile = true;
     try {
       const res = await fetch(`/api/profile/${userNickName}`);
       if (!res.ok) throw new Error('프로필 조회 실패');
-
       profile = await res.json();
     } catch (err) {
       console.error('프로필 조회 오류:', err);
@@ -72,7 +68,6 @@
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('팔로잉 여부 조회 실패');
-
       const data = await res.json();
       return data.is_following;
     } catch (err) {
@@ -82,33 +77,48 @@
   }
 
   async function loadCalendar() {
-    if (calendarLoaded) return;
-
     isLoadingCalendar = true;
     try {
-      const res = await fetch(`/api/calendar/user/${userNickName}`);
-      if (!res.ok) throw new Error('캘린더 조회 실패');
+      const token = get(auth)?.access_token;
+      const isMine = token && get(auth)?.nickname === userNickName;
+      const url = isMine ? `/api/calendar` : `/api/calendar/user/${userNickName}`;
 
-      calendarData = await res.json();
-      calendarLoaded = true;
+      // TypeScript 안전하게 Headers 처리
+      const headers = new Headers();
+      if (token) headers.set('Authorization', `Bearer ${token}`);
+
+      const res = await fetch(url, { headers });
+      if (!res.ok) throw new Error('캘린더 조회 실패');
+      const data = await res.json();
+      console.log(data)
+      const normalizedEvents = (data.events ?? []).map((e: any) => ({
+        id: e.id,
+        title: e.title ?? '제목 없음',
+        start_at: e.start_at ?? e.startAt ?? '',
+        end_at: e.end_at ?? e.endAt ?? '',
+        visibility: e.visibility ?? e.visibility_type ?? 'public',
+        emoji: e.emoji ?? '📅'
+      }));
+
+      calendarData = {
+        events: normalizedEvents,
+        monthData: data.monthData ?? generateEmptyMonthData(),
+        completionData: data.completionData ?? {}
+      };
     } catch (err) {
       console.error('캘린더 로드 오류:', err);
-      calendarData = null;
+      calendarData = { events: [], monthData: generateEmptyMonthData(), completionData: {} };
     } finally {
       isLoadingCalendar = false;
     }
   }
 
   async function loadFeed() {
-    if (feedLoaded) return;
-
     isLoadingFeed = true;
     try {
       const res = await fetch(`/api/feeds/user/${userNickName}`);
       if (!res.ok) throw new Error('피드 조회 실패');
-
       feedData = await res.json();
-      feedLoaded = true;
     } catch (err) {
       console.error('피드 로드 오류:', err);
       feedData = [];
@@ -117,9 +127,6 @@
     }
   }
 
-  // -------------------------------
-  // UI 이벤트 핸들러
-  // -------------------------------
   function handleTabChange(view: 'calendar' | 'feed') {
     activeView = view;
     if (view === 'calendar') loadCalendar();
@@ -137,40 +144,43 @@
     return monthData;
   }
 
-  function handleLike(event: CustomEvent) { console.log('좋아요', event.detail); }
-  function handleComment(event: CustomEvent) { console.log('댓글', event.detail); }
-  function handleBookmark(event: CustomEvent) { console.log('북마크', event.detail); }
-  function handleShare(event: CustomEvent) { console.log('공유', event.detail); }
-  function handleMore(event: CustomEvent) { console.log('더보기', event.detail); }
+  function handleLike(e: CustomEvent) { console.log('좋아요', e.detail); }
+  function handleComment(e: CustomEvent) { console.log('댓글', e.detail); }
+  function handleBookmark(e: CustomEvent) { console.log('북마크', e.detail); }
+  function handleShare(e: CustomEvent) { console.log('공유', e.detail); }
+  function handleMore(e: CustomEvent) { console.log('더보기', e.detail); }
 </script>
 
 <div class="container">
   <UserProfileHeader {profile} {isMyProfile} {isFollowing} isLoading={isLoadingProfile} />
 
   <div class="tabs">
-    <button class="tab" class:active={activeView === 'calendar'} on:click={() => handleTabChange('calendar')}>캘린더</button>
-    <button class="tab" class:active={activeView === 'feed'} on:click={() => handleTabChange('feed')}>피드</button>
+    <button class="tab" class:active={activeView === 'calendar'} on:click={() => handleTabChange('calendar')}>
+      캘린더
+    </button>
+    <button class="tab" class:active={activeView === 'feed'} on:click={() => handleTabChange('feed')}>
+      피드
+    </button>
   </div>
 
-  <!-- 캘린더 -->
   {#if activeView === 'calendar'}
     <div class="content">
       {#if isLoadingCalendar}
-        <div class="loading-message">캘린더를 불러오는 중...</div>
+        <LoadingSpinner message="캘린더를 불러오는 중..." />
       {:else}
         <Calendar
-          events={calendarData?.events ?? []}
-          monthData={calendarData?.monthData ?? generateEmptyMonthData()}
-          completionData={calendarData?.completionData ?? {}}
+          events={calendarData.events}
+          monthData={calendarData.monthData}
+          completionData={calendarData.completionData}
         />
       {/if}
     </div>
   {/if}
 
-  <!-- 피드 -->
   {#if activeView === 'feed'}
     <div class="content">
-      {#if isLoadingFeed} <div class="loading-message">피드를 불러오는 중...</div>
+      {#if isLoadingFeed}
+        <LoadingSpinner message="피드를 불러오는 중..." />
       {:else if feedData.length > 0}
         <div class="feed-list">
           {#each feedData as feed (feed.id)}
@@ -183,7 +193,7 @@
             />
           {/each}
         </div>
-      {:else} 
+      {:else}
         <div class="empty-message">아직 작성된 피드가 없습니다.</div>
       {/if}
     </div>

@@ -168,6 +168,7 @@
     min-height: 100%;
     border-left: 1px solid var(--border-light);
     border-right: 1px solid var(--border-light);
+    background: linear-gradient(to bottom, var(--bg-gradient-start), var(--bg-gradient-end));
     overflow-y: auto;
   }
 

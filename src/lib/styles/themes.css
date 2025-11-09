@@ -57,6 +57,9 @@
 }
 
 /* 전역 배경 */
+*{
+  box-sizing: border-box;
+}
 body {
   margin: 0;
   background: linear-gradient(to bottom, var(--bg-gradient-start), var(--bg-gradient-end));

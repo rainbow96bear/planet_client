@@ -3,10 +3,11 @@ import type { RequestHandler } from '@sveltejs/kit';
 const USER_SERVER_API_URL = process.env.VITE_USER_SERVER_API_URL;
 
 export const GET: RequestHandler = async ({ params }) => {
-  const res = await fetch(`${USER_SERVER_API_URL}/calendar/user/${params.userNickname}`, { method: 'GET' });
+  const res = await fetch(`${USER_SERVER_API_URL}/calendar/user/${params.userNickName}`, { method: 'GET' });
 
   if (!res.ok) return new Response(JSON.stringify({ error: '조회 실패' }), { status: res.status });
 
   const data = await res.json();
+  console.log("calendar : ",data)
   return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
 };

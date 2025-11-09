@@ -1,5 +1,22 @@
 <script lang="ts">
-  export let event: { id: number; title: string; start: number; end: number; visibility: string; emoji: string };
+  export let event: {
+    id: number;
+    title: string;
+    start_at: string; // ISO 형식 문자열
+    end_at: string;
+    visibility: string;
+    emoji: string;
+  };
+
+  // 날짜 문자열을 일(day)만 추출하는 함수
+  function getDay(dateString: string) {
+    const date = new Date(dateString);
+    return date.getDate();
+  }
+
+  const startDay = getDay(event.start_at);
+  const endDay = getDay(event.end_at);
+  const duration = endDay - startDay + 1;
 </script>
 
 <div class="plan-card">
@@ -8,14 +25,19 @@
     <div class="plan-info">
       <div class="plan-title">{event.title}</div>
       <div class="plan-date">
-        {event.start === event.end 
-          ? `${event.start}일` 
-          : `${event.start}일 - ${event.end}일 (${event.end - event.start + 1}일간)` }
+        {#if startDay === endDay}
+          {startDay}일
+        {:else}
+          {startDay}일 - {endDay}일 ({duration}일간)
+        {/if}
       </div>
     </div>
   </div>
   <div class="plan-visibility">
-    {#if event.visibility === 'public'}🌍{:else if event.visibility === 'friends'}👥{:else}🔒{/if}
+    {#if event.visibility === 'public'}🌍
+    {:else if event.visibility === 'friends'}👥
+    {:else}🔒
+    {/if}
   </div>
 </div>
 
