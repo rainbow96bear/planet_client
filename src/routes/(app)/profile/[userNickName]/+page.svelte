@@ -7,8 +7,9 @@
   import Calendar from '$lib/components/common/calendar/Calendar.svelte';
   import FeedCard from '$lib/components/common/feed/FeedCard.svelte';
   import UserProfileHeader from '$lib/components/profile/UserProfileHeader.svelte';
-  import type { UserProfile } from '$lib/types/profile';
   import LoadingSpinner from '$lib/components/common/loadingSpinner/LoadingSpinner.svelte';
+  import type { UserProfile } from '$lib/types/profile';
+  import type { CalendarEvent } from '$lib/types/calendar';
 
   let activeView: 'calendar' | 'feed' = 'calendar';
   $: userNickName = $page.params.userNickName ?? '';
@@ -19,12 +20,11 @@
   let isFollowing: boolean | null = null;
   let isLoadingProfile = true;
 
-  let calendarData: {
-    events: { id: number; title: string; start_at: string; end_at: string; visibility: 'public' | 'friends' | 'private'; emoji: string }[];
-    monthData: (number | null)[][];
-    completionData: Record<number, number>;
-  } = { events: [], monthData: [], completionData: {} };
+  let currentYear = new Date().getFullYear();
+  let currentMonth = new Date().getMonth() + 1;
 
+  let calendarCache: Record<string, any> = {};
+  let calendarData = { events: [] as CalendarEvent[], monthData: [], completionData: {} };
   let isLoadingCalendar = false;
   let feedData: any[] = [];
   let isLoadingFeed = false;
@@ -42,7 +42,7 @@
       isFollowing = await fetchIsFollowing(userNickName);
     }
 
-    if (activeView === 'calendar') await loadCalendar();
+    await loadCalendar();
   });
 
   async function loadProfile() {
@@ -52,7 +52,7 @@
       if (!res.ok) throw new Error('프로필 조회 실패');
       profile = await res.json();
     } catch (err) {
-      console.error('프로필 조회 오류:', err);
+      console.error(err);
       profile = null;
     } finally {
       isLoadingProfile = false;
@@ -62,7 +62,6 @@
   async function fetchIsFollowing(nickname: string) {
     const token = get(auth)?.access_token;
     if (!token) return null;
-
     try {
       const res = await fetch(`/api/profile/${nickname}/follow-status`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -77,37 +76,33 @@
   }
 
   async function loadCalendar() {
+    const cacheKey = `${userNickName}-${currentYear}-${currentMonth}`;
+    if (calendarCache[cacheKey]) {
+      calendarData = calendarCache[cacheKey];
+      return;
+    }
+
     isLoadingCalendar = true;
     try {
       const token = get(auth)?.access_token;
       const isMine = token && get(auth)?.nickname === userNickName;
-      const url = isMine ? `/api/calendar` : `/api/calendar/user/${userNickName}`;
+      let url = isMine ? `/api/calendar` : `/api/calendar/user/${userNickName}`;
+      url += `?year=${currentYear}&month=${currentMonth}`;
 
-      // TypeScript 안전하게 Headers 처리
-      const headers = new Headers();
-      if (token) headers.set('Authorization', `Bearer ${token}`);
-
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const res = await fetch(url, { headers });
       if (!res.ok) throw new Error('캘린더 조회 실패');
-      const data = await res.json();
-      console.log(data)
-      const normalizedEvents = (data.events ?? []).map((e: any) => ({
-        id: e.id,
-        title: e.title ?? '제목 없음',
-        start_at: e.start_at ?? e.startAt ?? '',
-        end_at: e.end_at ?? e.endAt ?? '',
-        visibility: e.visibility ?? e.visibility_type ?? 'public',
-        emoji: e.emoji ?? '📅'
-      }));
 
+      const data = await res.json();
       calendarData = {
-        events: normalizedEvents,
-        monthData: data.monthData ?? generateEmptyMonthData(),
+        events: data.events ?? [],
+        monthData: data.monthData ?? [],
         completionData: data.completionData ?? {}
       };
+      calendarCache[cacheKey] = calendarData;
     } catch (err) {
-      console.error('캘린더 로드 오류:', err);
-      calendarData = { events: [], monthData: generateEmptyMonthData(), completionData: {} };
+      console.error(err);
+      calendarData = { events: [], monthData: [], completionData: {} };
     } finally {
       isLoadingCalendar = false;
     }
@@ -120,7 +115,7 @@
       if (!res.ok) throw new Error('피드 조회 실패');
       feedData = await res.json();
     } catch (err) {
-      console.error('피드 로드 오류:', err);
+      console.error(err);
       feedData = [];
     } finally {
       isLoadingFeed = false;
@@ -130,49 +125,37 @@
   function handleTabChange(view: 'calendar' | 'feed') {
     activeView = view;
     if (view === 'calendar') loadCalendar();
-    else if (view === 'feed') loadFeed();
+    else loadFeed();
   }
 
-  function generateEmptyMonthData() {
-    const monthData = Array.from({ length: 5 }, () => Array(7).fill(null));
-    let day = 1;
-    for (let i = 0; i < monthData.length; i++) {
-      for (let j = 0; j < 7; j++) {
-        if (day <= 31) monthData[i][j] = day++;
-      }
-    }
-    return monthData;
+  function changeMonth(offset: number) {
+    currentMonth += offset;
+    if (currentMonth > 12) { currentMonth = 1; currentYear++; }
+    else if (currentMonth < 1) { currentMonth = 12; currentYear--; }
+    loadCalendar();
   }
-
-  function handleLike(e: CustomEvent) { console.log('좋아요', e.detail); }
-  function handleComment(e: CustomEvent) { console.log('댓글', e.detail); }
-  function handleBookmark(e: CustomEvent) { console.log('북마크', e.detail); }
-  function handleShare(e: CustomEvent) { console.log('공유', e.detail); }
-  function handleMore(e: CustomEvent) { console.log('더보기', e.detail); }
 </script>
 
 <div class="container">
   <UserProfileHeader {profile} {isMyProfile} {isFollowing} isLoading={isLoadingProfile} />
 
   <div class="tabs">
-    <button class="tab" class:active={activeView === 'calendar'} on:click={() => handleTabChange('calendar')}>
-      캘린더
-    </button>
-    <button class="tab" class:active={activeView === 'feed'} on:click={() => handleTabChange('feed')}>
-      피드
-    </button>
+    <button class:active={activeView === 'calendar'} on:click={() => handleTabChange('calendar')}>📅 캘린더</button>
+    <button class:active={activeView === 'feed'} on:click={() => handleTabChange('feed')}>📰 피드</button>
   </div>
 
   {#if activeView === 'calendar'}
+    <div class="month-controls">
+      <button on:click={() => changeMonth(-1)}>◀ 이전</button>
+      <span>{currentYear}년 {currentMonth}월</span>
+      <button on:click={() => changeMonth(1)}>다음 ▶</button>
+    </div>
+
     <div class="content">
       {#if isLoadingCalendar}
         <LoadingSpinner message="캘린더를 불러오는 중..." />
       {:else}
-        <Calendar
-          events={calendarData.events}
-          monthData={calendarData.monthData}
-          completionData={calendarData.completionData}
-        />
+        <Calendar {...calendarData} />
       {/if}
     </div>
   {/if}
@@ -184,13 +167,7 @@
       {:else if feedData.length > 0}
         <div class="feed-list">
           {#each feedData as feed (feed.id)}
-            <FeedCard {feed}
-              on:like={handleLike}
-              on:comment={handleComment}
-              on:bookmark={handleBookmark}
-              on:share={handleShare}
-              on:more={handleMore}
-            />
+            <FeedCard {feed} />
           {/each}
         </div>
       {:else}
@@ -201,11 +178,12 @@
 </div>
 
 <style>
-  .container { flex: 1; margin: 0 auto; min-height: 100vh; }
-  .tabs { background: var(--bg-primary); border-bottom: 1px solid var(--border-color); display: flex; position: sticky; top: 0; z-index: 20; }
-  .tab { flex: 1; padding: 0.75rem; border: none; background: none; font-size: 0.875rem; font-weight: 600; color: var(--text-tertiary); cursor: pointer; transition: all 0.2s; border-bottom: 2px solid transparent; }
-  .tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+  .container { margin: 0 auto; min-height: 100vh; }
+  .tabs { display: flex; justify-content: center; gap: 0.5rem; margin-top: 1rem; }
+  .tabs button { flex: 1; padding: 0.75rem; border: none; background: var(--bg-secondary); cursor: pointer; border-radius: 0.5rem; }
+  .tabs button.active { background: var(--accent-color); color: white; font-weight: bold; }
+  .month-controls { display: flex; justify-content: center; align-items: center; gap: 1rem; margin: 1rem 0; }
   .content { padding: 1rem; }
   .feed-list { display: flex; flex-direction: column; gap: 1rem; }
-  .loading-message, .empty-message { text-align: center; padding: 3rem 1rem; color: var(--text-secondary); font-size: 0.9375rem; }
+  .empty-message { text-align: center; padding: 3rem 1rem; color: #666; }
 </style>
