@@ -19,7 +19,6 @@ export const GET: RequestHandler = async ({ params, url }) => {
   const res = await fetch(apiUrl, { method: 'GET' });
 
   if (!res.ok) return new Response(JSON.stringify({ error: '조회 실패' }), { status: res.status });
-
   const data = await res.json();
   return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
 };

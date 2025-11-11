@@ -1,22 +1,52 @@
 <script lang="ts">
-  export let event: {
-    id: number;
-    title: string;
-    start_at: string; // ISO 형식 문자열
-    end_at: string;
-    visibility: string;
-    emoji: string;
-  };
+  import type { CalendarEvent } from '$lib/types/calendar';
 
-  // 날짜 문자열을 일(day)만 추출하는 함수
-  function getDay(dateString: string) {
+  export let event: CalendarEvent;
+
+  // 날짜 포맷 함수
+  function formatDate(dateString: string): string {
     const date = new Date(dateString);
-    return date.getDate();
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${year}.${month}.${day}`;
   }
 
-  const startDay = getDay(event.start_at);
-  const endDay = getDay(event.end_at);
-  const duration = endDay - startDay + 1;
+  // 날짜 범위 계산
+  function getDateRange(startAt: string, endAt: string): string {
+    const start = new Date(startAt);
+    const end = new Date(endAt);
+    
+    const startDay = start.getDate();
+    const endDay = end.getDate();
+    
+    // 같은 날짜인 경우
+    if (start.toDateString() === end.toDateString()) {
+      return `${formatDate(startAt)}`;
+    }
+    
+    // 다른 날짜인 경우
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    
+    return `${formatDate(startAt)} - ${formatDate(endAt)} (${diffDays}일간)`;
+  }
+
+  // visibility 아이콘 및 텍스트
+  function getVisibilityInfo(visibility: string): { icon: string; text: string } {
+    switch (visibility) {
+      case 'public':
+        return { icon: '🌍', text: '전체 공개' };
+      case 'friends':
+        return { icon: '👥', text: '친구 공개' };
+      case 'private':
+      default:
+        return { icon: '🔒', text: '비공개' };
+    }
+  }
+
+  $: visibilityInfo = getVisibilityInfo(event.visibility);
+  $: dateRange = getDateRange(event.start_at, event.end_at);
 </script>
 
 <div class="plan-card">
@@ -24,69 +54,81 @@
     <span class="plan-emoji">{event.emoji}</span>
     <div class="plan-info">
       <div class="plan-title">{event.title}</div>
-      <div class="plan-date">
-        {#if startDay === endDay}
-          {startDay}일
-        {:else}
-          {startDay}일 - {endDay}일 ({duration}일간)
-        {/if}
-      </div>
+      {#if event.description}
+        <div class="plan-description">{event.description}</div>
+      {/if}
+      <div class="plan-date">{dateRange}</div>
     </div>
   </div>
-  <div class="plan-visibility">
-    {#if event.visibility === 'public'}🌍
-    {:else if event.visibility === 'friends'}👥
-    {:else}🔒
-    {/if}
+  <div class="plan-visibility" title={visibilityInfo.text}>
+    {visibilityInfo.icon}
   </div>
 </div>
 
 <style>
-.plan-card {
-  background: var(--bg-primary);
-  border-radius: 1rem;
-  padding: 1rem;
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-color);
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  transition: all 0.2s;
-}
+  .plan-card {
+    background: var(--bg-primary);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.75rem;
+    transition: all 0.2s;
+  }
 
-.plan-card:hover {
-  box-shadow: var(--shadow-md);
-  border-color: var(--color-primary);
-}
+  .plan-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+  }
 
-.plan-content {
-  display: flex;
-  gap: 0.75rem;
-  flex: 1;
-}
+  .plan-content {
+    display: flex;
+    gap: 0.75rem;
+    flex: 1;
+    min-width: 0; /* 텍스트 overflow 처리를 위해 필요 */
+  }
 
-.plan-emoji {
-  font-size: 1.5rem;
-}
+  .plan-emoji {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
 
-.plan-info {
-  flex: 1;
-}
+  .plan-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
 
-.plan-title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 0.25rem;
-}
+  .plan-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1.4;
+  }
 
-.plan-date {
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--color-primary);
-}
+  .plan-description {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin-top: 0.25rem;
+  }
 
-.plan-visibility {
-  font-size: 0.875rem;
-}
+  .plan-date {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-primary);
+    margin-top: 0.25rem;
+  }
+
+  .plan-visibility {
+    font-size: 1rem;
+    flex-shrink: 0;
+    cursor: help;
+  }
 </style>
