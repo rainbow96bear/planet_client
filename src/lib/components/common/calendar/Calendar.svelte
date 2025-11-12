@@ -6,40 +6,17 @@
   export let events: CalendarEvent[] = [];
   export let completionData: Record<number, number> = {};
   export let monthData: (number | null)[][] = [];
+  export let year: number;
+  export let month: number;
+  export let isMyProfile: boolean = false; // 본인 프로필 여부
 
   let selectedDayEvents: CalendarEvent[] = [];
   let selectedDay: number | null = null;
   let showPopup = false;
   const dispatch = createEventDispatcher();
 
-  // monthData에서 년월 정보 추출 (monthData의 첫 번째 유효한 날짜 사용)
-  $: currentYearMonth = (() => {
-    // monthData에서 첫 번째 유효한 날짜 찾기
-    for (const week of monthData) {
-      for (const day of week) {
-        if (day && day > 0) {
-          // 현재 날짜를 기준으로 년월 추정
-          const now = new Date();
-          const currentYear = now.getFullYear();
-          const currentMonth = now.getMonth() + 1;
-          
-          // 만약 이벤트가 있다면 이벤트의 날짜에서 추출
-          if (events.length > 0) {
-            const firstEvent = events[0];
-            const date = new Date(firstEvent.start_at);
-            return { year: date.getFullYear(), month: date.getMonth() + 1 };
-          }
-          
-          // 이벤트가 없으면 현재 날짜 사용
-          return { year: currentYear, month: currentMonth };
-        }
-      }
-    }
-    
-    // monthData가 비어있으면 현재 날짜 사용
-    const now = new Date();
-    return { year: now.getFullYear(), month: now.getMonth() + 1 };
-  })();
+  // 현재 캘린더의 년월 정보
+  $: currentYearMonth = { year, month };
 
   // 특정 날짜에 해당하는 이벤트를 필터링
   function getEventsForDay(day: number): CalendarEvent[] {
@@ -50,7 +27,6 @@
       const startDate = new Date(event.start_at);
       const endDate = new Date(event.end_at);
       
-      // 날짜만 비교 (시간 제거)
       const startDay = startDate.getDate();
       const startMonth = startDate.getMonth() + 1;
       const startYear = startDate.getFullYear();
@@ -59,34 +35,26 @@
       const endMonth = endDate.getMonth() + 1;
       const endYear = endDate.getFullYear();
       
-      // 현재 캘린더의 년월과 비교
       const targetYear = currentYearMonth.year;
       const targetMonth = currentYearMonth.month;
       
-      // 이벤트가 현재 월에 걸쳐있는지 확인
       const startInCurrentMonth = startYear === targetYear && startMonth === targetMonth;
       const endInCurrentMonth = endYear === targetYear && endMonth === targetMonth;
       const spanningCurrentMonth = 
         (startYear < targetYear || (startYear === targetYear && startMonth < targetMonth)) &&
         (endYear > targetYear || (endYear === targetYear && endMonth > targetMonth));
       
-      // 현재 월에 이벤트가 있는지
       if (!startInCurrentMonth && !endInCurrentMonth && !spanningCurrentMonth) {
         return false;
       }
       
-      // 해당 날짜가 이벤트 범위 내에 있는지
       if (startInCurrentMonth && endInCurrentMonth) {
-        // 같은 월 내에서 시작하고 끝남
         return day >= startDay && day <= endDay;
       } else if (spanningCurrentMonth) {
-        // 이전 월에 시작해서 다음 월에 끝남
         return true;
       } else if (startInCurrentMonth) {
-        // 현재 월에 시작
         return day >= startDay;
       } else if (endInCurrentMonth) {
-        // 현재 월에 끝남
         return day <= endDay;
       }
       
@@ -96,7 +64,6 @@
     return filteredEvents;
   }
 
-  // 완료율에 따른 배경색 스타일
   function getCompletionStyle(completion: number): string {
     if (completion === 0) return 'var(--bg-secondary)';
     if (completion < 50) return 'rgba(125,189,182,0.1)';
@@ -104,25 +71,41 @@
     return 'linear-gradient(135deg, rgba(125,189,182,0.3), rgba(139,157,195,0.3))';
   }
 
-  // 날짜 클릭 핸들러
   function handleDayClick(day: number | null) {
-    if (day === 0 || day === null) return; // 빈 날짜는 클릭 불가
+    if (day === 0 || day === null) return;
     
     const dayEvents = getEventsForDay(day);
     selectedDayEvents = dayEvents;
     selectedDay = day;
-    showPopup = dayEvents.length > 0; // 이벤트가 있을 때만 팝업 표시
+    showPopup = true; // 본인이면 일정이 없어도 팝업 표시 (새 일정 추가 위해)
     dispatch('daySelected', { day, events: dayEvents });
+  }
+
+  function handleAddEvent() {
+    dispatch('addEvent', { 
+      year, 
+      month, 
+      day: selectedDay 
+    });
+    showPopup = false;
+  }
+
+  function handleEditEvent(event: CalendarEvent) {
+    dispatch('editEvent', { event });
+    showPopup = false;
+  }
+
+  function handleDeleteEvent(event: CalendarEvent) {
+    dispatch('deleteEvent', { event });
   }
 
   // monthData를 이벤트 정보와 함께 가공
   $: monthDataWithEvents = monthData.map((week, weekIdx) =>
     week.map((day, dayIdx) => {
-      // 0이나 null은 빈 날짜를 의미
       if (day === 0 || day === null) return null;
       
       return {
-        day: day as number, // 타입 단언: 이미 null 체크를 했으므로 number임
+        day: day as number,
         dayEvents: getEventsForDay(day),
         completion: completionData[day] || 0,
         isSunday: dayIdx === 0,
@@ -150,6 +133,7 @@
               <div 
                 class="day-cell"
                 class:has-events={dayObj.dayEvents.length > 0}
+                class:my-profile={isMyProfile}
                 style="background: {getCompletionStyle(dayObj.completion)}"
                 on:click={() => handleDayClick(dayObj.day)}
                 on:keydown={(e) => e.key === 'Enter' && handleDayClick(dayObj.day)}
@@ -176,10 +160,11 @@
                       <div class="more-events">+{dayObj.dayEvents.length - 2}개</div>
                     {/if}
                   </div>
+                {:else if isMyProfile}
+                  <div class="add-event-hint">+ 일정 추가</div>
                 {/if}
               </div>
             {:else}
-              <!-- 빈 날짜 셀 -->
               <div class="empty-cell"></div>
             {/if}
           </div>
@@ -188,7 +173,7 @@
     {/each}
   </div>
 
-  {#if showPopup && selectedDayEvents.length > 0}
+  {#if showPopup}
     <div 
       class="popup-overlay" 
       on:click={() => showPopup = false}
@@ -202,12 +187,54 @@
         on:keydown|stopPropagation
         role="dialog"
       >
-        <h3>{selectedDay}일의 일정</h3>
-        <div class="popup-events">
-          {#each selectedDayEvents as event (event.eventId)}
-            <PlanCard {event} />
-          {/each}
+        <div class="popup-header">
+          <h3>{selectedDay}일의 일정</h3>
+          {#if isMyProfile}
+            <button class="add-btn" on:click={handleAddEvent}>
+              ➕ 새 일정
+            </button>
+          {/if}
         </div>
+
+        {#if selectedDayEvents.length > 0}
+          <div class="popup-events">
+            {#each selectedDayEvents as event (event.eventId)}
+              <div class="event-card-wrapper">
+                <PlanCard {event} />
+                {#if isMyProfile}
+                  <div class="event-actions">
+                    <button 
+                      class="action-btn edit-btn" 
+                      on:click={() => handleEditEvent(event)}
+                      title="수정"
+                    >
+                      ✏️
+                    </button>
+                    <button 
+                      class="action-btn delete-btn" 
+                      on:click={() => handleDeleteEvent(event)}
+                      title="삭제"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                {/if}
+              </div>
+            {/each}
+          </div>
+        {:else if isMyProfile}
+          <div class="empty-state">
+            <p>이 날에 등록된 일정이 없습니다.</p>
+            <button class="add-empty-btn" on:click={handleAddEvent}>
+              ➕ 일정 추가하기
+            </button>
+          </div>
+        {:else}
+          <div class="empty-state">
+            <p>이 날에 등록된 일정이 없습니다.</p>
+          </div>
+        {/if}
+
         <button class="close-btn" on:click={() => showPopup = false}>닫기</button>
       </div>
     </div>
@@ -273,6 +300,7 @@
     transition: transform 0.2s, box-shadow 0.2s;
     height: 100%;
     overflow: hidden;
+    position: relative;
   }
 
   .day-cell:hover {
@@ -282,6 +310,16 @@
 
   .day-cell.has-events {
     border: 1px solid rgba(125,189,182,0.3);
+  }
+
+  .day-cell.my-profile:hover::after {
+    content: '+';
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    font-size: 1rem;
+    color: var(--color-primary);
+    opacity: 0.7;
   }
 
   .day-number {
@@ -336,6 +374,17 @@
     padding: 0.15rem;
   }
 
+  .add-event-hint {
+    font-size: 0.65rem;
+    color: var(--color-primary);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .day-cell:hover .add-event-hint {
+    opacity: 1;
+  }
+
   .popup-overlay {
     position: fixed;
     inset: 0;
@@ -354,11 +403,35 @@
     max-height: 80vh;
     overflow-y: auto;
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    min-width: 400px;
   }
 
-  .popup-content h3 {
-    margin: 0 0 1rem 0;
+  .popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .popup-header h3 {
+    margin: 0;
     font-size: 1.2rem;
+  }
+
+  .add-btn {
+    padding: 0.5rem 1rem;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: opacity 0.2s;
+  }
+
+  .add-btn:hover {
+    opacity: 0.9;
   }
 
   .popup-events {
@@ -368,11 +441,82 @@
     margin-bottom: 1rem;
   }
 
+  .event-card-wrapper {
+    position: relative;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .event-card-wrapper > :global(.plan-card) {
+    flex: 1;
+  }
+
+  .event-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .action-btn {
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .edit-btn {
+    background: #e3f2fd;
+  }
+
+  .edit-btn:hover {
+    background: #bbdefb;
+  }
+
+  .delete-btn {
+    background: #ffebee;
+  }
+
+  .delete-btn:hover {
+    background: #ffcdd2;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: #666;
+  }
+
+  .empty-state p {
+    margin: 0 0 1rem 0;
+  }
+
+  .add-empty-btn {
+    padding: 0.75rem 1.5rem;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: opacity 0.2s;
+  }
+
+  .add-empty-btn:hover {
+    opacity: 0.9;
+  }
+
   .close-btn {
     width: 100%;
     padding: 0.75rem;
-    background: var(--accent-color);
-    color: white;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
     border: none;
     border-radius: 0.5rem;
     cursor: pointer;
