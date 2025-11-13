@@ -25,8 +25,10 @@
 
   let calendarData = { 
     events: [] as CalendarEvent[], 
-    monthData: [] as number[][], 
-    completionData: {} as Record<number, number> 
+    monthData: [] as (number | null)[][], 
+    completionData: {} as Record<number, number>,
+    year: new Date().getFullYear(),
+    month: new Date().getMonth() + 1
   };
   let isLoadingCalendar = false;
   let feedData: any[] = [];
@@ -94,11 +96,13 @@
       calendarData = {
         events: data.events ?? [],
         monthData: data.monthData ?? [],
-        completionData: data.completionData ?? {}
+        completionData: data.completionData ?? {},
+        year: currentYear,
+        month: currentMonth
       };
     } catch (err) {
       console.error(err);
-      calendarData = { events: [], monthData: [], completionData: {} };
+      calendarData = { events: [], monthData: [], completionData: {}, year: currentYear, month: currentMonth };
     } finally {
       isLoadingCalendar = false;
     }
@@ -138,6 +142,44 @@
     }
     loadCalendar();
   }
+
+  // 일정 관리 핸들러
+  function handleAddEvent(e: CustomEvent) {
+    const { year, month, day } = e.detail;
+    console.log('일정 추가:', { year, month, day });
+    // TODO: 일정 추가 모달 열기
+    alert(`${year}년 ${month}월 ${day}일에 새 일정을 추가합니다.`);
+  }
+
+  function handleEditEvent(e: CustomEvent) {
+    const { event } = e.detail;
+    console.log('일정 수정:', event);
+    // TODO: 일정 수정 모달 열기
+    alert(`"${event.title}" 일정을 수정합니다.`);
+  }
+
+  async function handleDeleteEvent(e: CustomEvent) {
+    const { event } = e.detail;
+    if (!confirm(`"${event.title}" 일정을 삭제하시겠습니까?`)) {
+      return;
+    }
+
+    try {
+      const token = get(auth)?.access_token;
+      const res = await fetch(`/api/calendar/${event.eventId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!res.ok) throw new Error('일정 삭제 실패');
+      
+      alert('일정이 삭제되었습니다.');
+      await loadCalendar(); // 캘린더 새로고침
+    } catch (err) {
+      console.error(err);
+      alert('일정 삭제에 실패했습니다.');
+    }
+  }
 </script>
 
 <div class="container">
@@ -167,6 +209,12 @@
           events={calendarData.events}
           monthData={calendarData.monthData}
           completionData={calendarData.completionData}
+          year={calendarData.year}
+          month={calendarData.month}
+          isMyProfile={isMyProfile}
+          on:addEvent={handleAddEvent}
+          on:editEvent={handleEditEvent}
+          on:deleteEvent={handleDeleteEvent}
         />
       {/if}
     </div>

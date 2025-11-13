@@ -15,6 +15,8 @@ export interface CalendarData {
   events: CalendarEvent[];
   completionData: Record<number, number>; // day: completion % (0-100)
   monthData: (number | null)[][];         // 달력 그리드 데이터 (0 또는 null은 빈 날짜)
+  year: number;                           // 캘린더 년도
+  month: number;                          // 캘린더 월 (1-12)
 }
 
 // 일정 생성/수정 요청 타입
