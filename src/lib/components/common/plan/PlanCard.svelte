@@ -46,7 +46,7 @@
   }
 
   $: visibilityInfo = getVisibilityInfo(event.visibility);
-  $: dateRange = getDateRange(event.start_at, event.end_at);
+  $: dateRange = getDateRange(event.startAt, event.endAt);
 </script>
 
 <div class="plan-card">

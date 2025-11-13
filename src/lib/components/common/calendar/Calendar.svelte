@@ -6,7 +6,6 @@
   export let events: CalendarEvent[] = [];
   export let completionData: Record<number, number> = {};
   export let monthData: (number | null)[][] = [];
-
   let selectedDayEvents: CalendarEvent[] = [];
   let selectedDay: number | null = null;
   let showPopup = false;
@@ -26,7 +25,7 @@
           // 만약 이벤트가 있다면 이벤트의 날짜에서 추출
           if (events.length > 0) {
             const firstEvent = events[0];
-            const date = new Date(firstEvent.start_at);
+            const date = new Date(firstEvent.startAt);
             return { year: date.getFullYear(), month: date.getMonth() + 1 };
           }
           
@@ -47,8 +46,8 @@
     if (!currentYearMonth) return [];
     
     const filteredEvents = events.filter(event => {
-      const startDate = new Date(event.start_at);
-      const endDate = new Date(event.end_at);
+      const startDate = new Date(event.startAt);
+      const endDate = new Date(event.endAt);
       
       // 날짜만 비교 (시간 제거)
       const startDay = startDate.getDate();

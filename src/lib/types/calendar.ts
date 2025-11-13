@@ -4,8 +4,8 @@ export interface CalendarEvent {
   title: string;
   description?: string;      // 선택적 설명 필드
   emoji: string;
-  start_at: string;          // ISO 8601 형식 또는 "YYYY-MM-DD"
-  end_at: string;            // ISO 8601 형식 또는 "YYYY-MM-DD"
+  startAt: string;          // ISO 8601 형식 또는 "YYYY-MM-DD"
+  endAt: string;            // ISO 8601 형식 또는 "YYYY-MM-DD"
   visibility: 'public' | 'friends' | 'private';
   created_at?: string;       // 생성 일시
   updated_at?: string;       // 수정 일시
@@ -22,8 +22,8 @@ export interface CalendarEventInput {
   title: string;
   description?: string;
   emoji: string;
-  start_at: string;
-  end_at: string;
+  startAt: string;
+  endAt: string;
   visibility: 'public' | 'friends' | 'private';
 }
 
