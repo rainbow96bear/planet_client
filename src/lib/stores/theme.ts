@@ -1,18 +1,25 @@
 import { writable } from 'svelte/store';
 import { browser } from '$app/environment';
 
-type Theme = 'light' | 'dark';
+export type Theme = 'light' | 'dark';
 
 const getInitialTheme = (): Theme => {
-  if (!browser) return 'light'; // SSR에서는 light 기본
+  if (!browser) return 'light';
+
   const stored = localStorage.getItem('theme') as Theme;
   if (stored) return stored;
-  if (window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
-  return 'light';
+
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 };
 
 function createThemeStore() {
   const { subscribe, set } = writable<Theme>(getInitialTheme());
+
+  // 브라우저에서 구독 시 DOM 초기값 적용
+  if (browser) {
+    const initial = getInitialTheme();
+    document.documentElement.setAttribute('data-theme', initial);
+  }
 
   return {
     subscribe,
@@ -24,15 +31,14 @@ function createThemeStore() {
       set(theme);
     },
     toggle: () => {
-      const current: Theme = browser
-        ? (document.documentElement.getAttribute('data-theme') as Theme) || 'light'
-        : 'light';
-      const newTheme: Theme = current === 'light' ? 'dark' : 'light';
-      if (browser) {
-        localStorage.setItem('theme', newTheme);
-        document.documentElement.setAttribute('data-theme', newTheme);
-      }
-      set(newTheme);
+      subscribe(current => {
+        const newTheme: Theme = current === 'light' ? 'dark' : 'light';
+        if (browser) {
+          localStorage.setItem('theme', newTheme);
+          document.documentElement.setAttribute('data-theme', newTheme);
+        }
+        set(newTheme);
+      })();
     }
   };
 }

@@ -1,0 +1,78 @@
+.themeOptions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.themeOption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  border: 2px solid var(--border-light);
+  background: var(--bg-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.themeOption:hover {
+  border-color: var(--color-primary);
+}
+
+.active {
+  border-color: var(--color-primary);
+  background: var(--bg-primary);
+}
+
+.themePreview {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.lightPreview { background: #FFFFFF; }
+.darkPreview { background: #1F2937; }
+
+.previewHeader {
+  height: 30%;
+  background: linear-gradient(135deg, #7DBDB6, #8B9DC3);
+}
+
+.previewContent {
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.lightPreview .previewLine { height: 0.5rem; background: #E5E7EB; border-radius: 0.25rem; }
+.darkPreview .previewLine { height: 0.5rem; background: #374151; border-radius: 0.25rem; }
+
+.short { width: 60%; }
+
+.themeName {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.checkIcon {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: bold;
+}

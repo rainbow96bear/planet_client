@@ -7,6 +7,7 @@
   export let currentPath: string = '/';
   export let isLoggedIn: boolean = false;
   export let profile:UserProfile|null=null;
+  console.log("dk")
   function isActive(path: string) {
     return currentPath === path;
   }

@@ -1,0 +1,64 @@
+.container {
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.tabs button {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  background: var(--bg-secondary);
+  cursor: pointer;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.tabs button.active {
+  background: var(--color-accent);
+  color: white;
+  font-weight: bold;
+}
+
+.monthControls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.monthControls button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: var(--bg-secondary);
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.monthControls span {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.content {
+  padding: 1rem;
+}
+
+.feedList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.emptyMessage {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-secondary);
+}

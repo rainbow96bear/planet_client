@@ -1,3 +1,13 @@
+export type ProfileState = {
+  profile: UserProfile | null;
+  isAuthValid: boolean;
+  isMyProfile: boolean;
+  isFollowing: boolean | null;
+  isLoadingProfile: boolean;
+  isLoadingCalendar: boolean;
+  isLoadingFeed: boolean;
+};
+
 export interface UserProfile {
   uuid: string;
   nickname: string;
@@ -6,15 +16,6 @@ export interface UserProfile {
   email?: string;
   followerCount: number;
   followingCount: number;
-}
-
-export interface CalendarEvent {
-  id: number;
-  title: string;
-  start: number;
-  end: number;
-  emoji?: string;
-  visibility: 'public' | 'friends' | 'private';
 }
 
 export interface Feed {

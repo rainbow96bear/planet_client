@@ -6,8 +6,8 @@
   export let eventData: {
     title?: string;
     emoji?: string;
-    startDate?: string;
-    endDate?: string;
+    startAt?: string;
+    endAt?: string;
     description?: string;
     visibility?: Visibility;
     todos?: { text: string; completed: boolean }[];
@@ -18,8 +18,8 @@
 
   let title = eventData.title || '';
   let emoji = eventData.emoji || '📝';
-  let startDate = eventData.startDate || '';
-  let endDate = eventData.endDate || '';
+  let startAt = eventData.startAt || '';
+  let endAt = eventData.endAt || '';
   let description = eventData.description || '';
   let visibility: Visibility = (eventData.visibility as Visibility) || 'public';
   let todos = eventData.todos?.length ? [...eventData.todos] : [{ text: '', completed: false }];
@@ -75,30 +75,28 @@
       alert('일정 제목을 입력해주세요.');
       return;
     }
-    if (!startDate || !endDate) {
+    if (!startAt || !endAt) {
       alert('시작일과 종료일을 선택해주세요.');
       return;
     }
-    if (new Date(startDate) > new Date(endDate)) {
+    if (new Date(startAt) > new Date(endAt)) {
       alert('종료일은 시작일보다 이후여야 합니다.');
       return;
     }
 
     const filteredTodos = todos.filter(t => t.text.trim() !== '');
-    const payload = new FormData();
-    payload.append('title', title);
-    payload.append('emoji', emoji);
-    payload.append('startDate', startDate);
-    payload.append('endDate', endDate);
-    payload.append('description', description);
-    payload.append('visibility', visibility);
-    payload.append('todos', JSON.stringify(filteredTodos));
-    
-    // 추후 이미지 기능 활성화 시
-    if (ENABLE_IMAGE_UPLOAD && selectedImage) {
-      payload.append('image', selectedImage);
-    }
-    
+    const payload = {
+      title,
+      emoji,
+      startAt,
+      endAt,
+      description,
+      visibility,
+      todos: filteredTodos,
+      // image 관련은 아직 비활성화므로 제외 또는 imageUrl만 보낼 수 있음
+      imageUrl: previewUrl // 있으면 보내고 없으면 undefined
+    };
+
     dispatch('submit', payload);
   }
 
@@ -187,12 +185,12 @@
       <div class="date-group">
         <div class="date-input-wrapper">
           <label class="date-label">시작</label>
-          <input type="date" bind:value={startDate} class="date-input" required />
+          <input type="date" bind:value={startAt} class="date-input" required />
         </div>
         <span class="date-divider">→</span>
         <div class="date-input-wrapper">
           <label class="date-label">종료</label>
-          <input type="date" bind:value={endDate} class="date-input" required />
+          <input type="date" bind:value={endAt} class="date-input" required />
         </div>
       </div>
     </div>

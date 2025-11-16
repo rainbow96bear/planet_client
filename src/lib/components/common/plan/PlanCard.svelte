@@ -1,134 +1,63 @@
 <script lang="ts">
   import type { CalendarEvent } from '$lib/types/calendar';
+  import { createEventDispatcher } from 'svelte';
+  import styles from './PlanCard.module.css';
 
   export let event: CalendarEvent;
+  export let isOwner: boolean = false;
 
-  // 날짜 포맷 함수
-  function formatDate(dateString: string): string {
+  const dispatch = createEventDispatcher();
+
+  function formatDate(dateString: string) {
     const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
-    return `${year}.${month}.${day}`;
+    return `${date.getFullYear()}.${date.getMonth() + 1}.${date.getDate()}`;
   }
 
-  // 날짜 범위 계산
-  function getDateRange(startAt: string, endAt: string): string {
+  function getDateRange(startAt: string, endAt: string) {
     const start = new Date(startAt);
     const end = new Date(endAt);
-    
-    const startDay = start.getDate();
-    const endDay = end.getDate();
-    
-    // 같은 날짜인 경우
-    if (start.toDateString() === end.toDateString()) {
-      return `${formatDate(startAt)}`;
-    }
-    
-    // 다른 날짜인 경우
-    const diffTime = Math.abs(end.getTime() - start.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-    
+    if (start.toDateString() === end.toDateString()) return formatDate(startAt);
+
+    const diffDays = Math.ceil((end.getTime() - start.getTime()) / (1000*60*60*24)) + 1;
     return `${formatDate(startAt)} - ${formatDate(endAt)} (${diffDays}일간)`;
   }
 
-  // visibility 아이콘 및 텍스트
-  function getVisibilityInfo(visibility: string): { icon: string; text: string } {
+  function getVisibilityInfo(visibility: string) {
     switch (visibility) {
-      case 'public':
-        return { icon: '🌍', text: '전체 공개' };
-      case 'friends':
-        return { icon: '👥', text: '친구 공개' };
-      case 'private':
-      default:
-        return { icon: '🔒', text: '비공개' };
+      case 'public': return { icon: '🌍', text: '전체 공개' };
+      case 'friends': return { icon: '👥', text: '친구 공개' };
+      default: return { icon: '🔒', text: '비공개' };
     }
   }
 
   $: visibilityInfo = getVisibilityInfo(event.visibility);
   $: dateRange = getDateRange(event.startAt, event.endAt);
+
+  function handleEdit() { dispatch('edit', event); }
+  function handleDelete() { dispatch('delete', event); }
+  function handleView() { dispatch('view', event); }
 </script>
 
-<div class="plan-card">
-  <div class="plan-content">
-    <span class="plan-emoji">{event.emoji}</span>
-    <div class="plan-info">
-      <div class="plan-title">{event.title}</div>
+<div class={styles.planCard}>
+  <div class={styles.planContent}>
+    <span class={styles.planEmoji}>{event.emoji}</span>
+    <div class={styles.planInfo}>
+      <div class={styles.planTitle}>{event.title}</div>
       {#if event.description}
-        <div class="plan-description">{event.description}</div>
+        <div class={styles.planDescription}>{event.description}</div>
       {/if}
-      <div class="plan-date">{dateRange}</div>
+      <div class={styles.planDate}>{dateRange}</div>
+      <div class={styles.buttonGroup}>
+        {#if isOwner}
+          <button class={styles.button} on:click={handleEdit}>수정</button>
+          <button class={styles.button} on:click={handleDelete}>삭제</button>
+        {:else}
+          <button class={styles.button} on:click={handleView}>상세보기</button>
+        {/if}
+      </div>
     </div>
   </div>
-  <div class="plan-visibility" title={visibilityInfo.text}>
+  <div class={styles.planVisibility} title={visibilityInfo.text}>
     {visibilityInfo.icon}
   </div>
 </div>
-
-<style>
-  .plan-card {
-    background: var(--bg-primary);
-    border-radius: 0.75rem;
-    padding: 1rem;
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 0.75rem;
-    transition: all 0.2s;
-  }
-
-  .plan-card:hover {
-    box-shadow: var(--shadow-md);
-    border-color: var(--color-primary);
-    transform: translateY(-2px);
-  }
-
-  .plan-content {
-    display: flex;
-    gap: 0.75rem;
-    flex: 1;
-    min-width: 0; /* 텍스트 overflow 처리를 위해 필요 */
-  }
-
-  .plan-emoji {
-    font-size: 1.5rem;
-    flex-shrink: 0;
-  }
-
-  .plan-info {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .plan-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    line-height: 1.4;
-  }
-
-  .plan-description {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    line-height: 1.4;
-    margin-top: 0.25rem;
-  }
-
-  .plan-date {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--color-primary);
-    margin-top: 0.25rem;
-  }
-
-  .plan-visibility {
-    font-size: 1rem;
-    flex-shrink: 0;
-    cursor: help;
-  }
-</style>
