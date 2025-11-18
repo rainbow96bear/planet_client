@@ -199,7 +199,9 @@
       <Calendar
         events={calendarData.events}
         monthData={calendarData.monthData}
-        completionData={calendarData.completionData}
+        completionData={calendarData.completionData}\
+        year={calendarData.year}
+        month={calendarData.month}
         on:addEvent={handleAddEvent}
         on:editEvent={handleEditEvent}
         on:deleteEvent={handleDeleteEvent}
