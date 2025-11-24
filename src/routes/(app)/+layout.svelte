@@ -1,6 +1,5 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { profileState } from '$lib/stores/profileState';
   import Header from '$lib/components/header/Header.svelte';
   import Footer from '$lib/components/footer/Footer.svelte';
   import NavigationBar from '$lib/components/sideBar/NavigationBar.svelte';
@@ -8,41 +7,45 @@
   import '$lib/styles/themes.css';
 
   import styles from './layout.module.css';
-  import { initLayout, suggestedUsers, trendingTags, type LayoutState } from './layout';
-  import { writable, derived } from 'svelte/store';
+  import { layoutState } from '$lib/stores/layoutState';
+  import { derived } from 'svelte/store';
+  import type { SuggestedUser, TrendingTag } from '$lib/types/layout';
+	import { initLayout } from './layout';
+	import { userProfile } from '$lib/stores/userProfile';
 
-  // -----------------------------
-  // layoutState 관리
-  // -----------------------------
-  const layoutState = writable<LayoutState>({
-    isLoggedIn: false,
-    currentPath: '',
-    suggestedUsers,
-    trendingTags
-  });
-  
   const currentPathStore = derived(page, $page => $page.url.pathname);
-  
-  initLayout(currentPathStore, (partial) =>
-    layoutState.update(s => ({ ...s, ...partial }))
-  );
+  initLayout(currentPathStore, (partial) => {
+    layoutState.update(s => ({ ...s, ...partial }));
+  });
 
-  let state: LayoutState;
-  layoutState.subscribe(v => state = v);
+  const suggestedUsers: SuggestedUser[] = [
+    { name: '강하늘', handle: '@haneul_cook', avatar: '👨‍🍳', bio: '요리 블로거' },
+    { name: '윤서아', handle: '@seoa_art', avatar: '🎨', bio: '일러스트레이터' },
+    { name: '정우진', handle: '@woojin_music', avatar: '🎵', bio: '음악 프로듀서' },
+    { name: '김태희', handle: '@taehee_yoga', avatar: '🧘‍♀️', bio: '요가 강사' },
+    { name: '박준영', handle: '@junyoung_photo', avatar: '📷', bio: '사진작가' }
+  ];
 
+  const trendingTags: TrendingTag[] = [
+    { tag: '운동루틴', count: 1100 },
+    { tag: '독서챌린지', count: 856 },
+    { tag: '요리일기', count: 742 },
+    { tag: '코딩공부', count: 689 },
+    { tag: '여행계획', count: 534 }
+  ];
   const searchTag = (tag: string) => window.location.href = `/search?q=${encodeURIComponent(tag)}`;
   const followUser = (handle: string) => console.log('팔로우:', handle);
 </script>
 
 <div class={styles.layout}>
   <header class={styles.layoutHeader}>
-    <Header isLoggedIn={state.isLoggedIn} profile={$profileState?.profile ?? null}/>
+    <Header/>
   </header>
 
   <main class={styles.layoutMain}>
     <aside class={styles.leftSidebar}>
-      {#if $layoutState.isLoggedIn && $profileState}
-        <NavigationBar currentPath={$layoutState.currentPath} isLoggedIn={$layoutState.isLoggedIn} profile={$profileState?.profile} />
+      {#if $userProfile}
+        <NavigationBar currentPath={$layoutState.currentPath}/>
       {/if}
     </aside>
 
@@ -52,12 +55,11 @@
 
     <aside class={styles.rightSidebar}>
       <div class={styles.sidebarContent}>
-        <TrendingTags trendingTags={state.trendingTags} onSelectTag={searchTag}/>
-
+        <TrendingTags trendingTags={trendingTags} onSelectTag={searchTag}/>
         <div class={styles.widgetSuggested}>
           <h2 class={styles.widgetTitle}>추천 친구</h2>
           <div class={styles.widgetContent}>
-            {#each state.suggestedUsers as user}
+            {#each suggestedUsers as user}
               <div class={styles.suggestedUser}>
                 <button class={styles.userMain} on:click={() => window.location.href=`/profile/${user.handle.replace('@','')}`}>
                   <div class={styles.userAvatar}>{user.avatar}</div>

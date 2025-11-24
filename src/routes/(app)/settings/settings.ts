@@ -1,50 +1,90 @@
 import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
-import { theme, auth, isLoggedIn, clearAuth, initAuth, userProfile, fetchUserProfile } from '$lib/stores';
+import { theme, auth, isLoggedIn, clearAuth, initAuth, profileState } from '$lib/stores';
 
+//
+// 프로필 불러오기
+//
+export async function fetchUserProfile() {
+  const token = get(auth)?.access_token;
+  if (!token) return;
+
+  try {
+    const res = await fetch('/api/profile/me', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    if (!res.ok) throw new Error('프로필 불러오기 실패');
+
+    const data = await res.json();
+    profileState.set(data);
+  } catch (err) {
+    console.error(err);
+    profileState.set(null);
+  }
+}
+
+//
+// 테마 변경
+//
 export async function handleThemeChange(event: CustomEvent<{ theme: 'light' | 'dark' }>) {
   const newTheme = event.detail.theme;
   theme.setTheme(newTheme);
 
-  const tokenState = get(auth);
-  if (!tokenState?.access_token) return;
+  const token = get(auth)?.access_token;
+  if (!token) return;
 
   try {
-    await fetch('/api/user/theme', {
+    await fetch('/api/profile/theme', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${tokenState.access_token}`,
+        Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify({ theme: newTheme }),
+      body: JSON.stringify({ theme: newTheme })
     });
   } catch (err) {
     console.error('테마 저장 실패:', err);
   }
 }
 
+//
+// 로그아웃
+//
 export async function handleLogout() {
-  const tokenState = get(auth);
+  const token = get(auth)?.access_token;
+
   try {
-    await fetch('/api/user/logout', {
+    await fetch('/api/auth/logout', {
       method: 'POST',
-      headers: tokenState ? { Authorization: `Bearer ${tokenState.access_token}` } : {},
       credentials: 'include',
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
     });
 
     clearAuth();
-    userProfile.set(null);
-    goto('/');
+    profileState.set(null);
+    goto('/auth/login');
   } catch (err) {
     console.error('로그아웃 실패:', err);
   }
 }
 
-export async function initSettings() {
+//
+// 페이지 초기화
+//
+export async function initSettingsPage() {
   await initAuth();
+
   if (!get(isLoggedIn)) {
-    goto('/login');
-    return;
+    return false; // 로그인 안됨
   }
+
   await fetchUserProfile();
+
+  if (!get(profileState)) {
+    clearAuth();
+    return false; // 프로필 없음
+  }
+
+  return true; // 모든 준비 완료
 }

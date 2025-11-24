@@ -1,23 +1,43 @@
-import type { RequestHandler } from "@sveltejs/kit";
+// src/routes/api/user/logout/+server.ts
+import type { RequestHandler } from '@sveltejs/kit';
 
 const AUTH_SERVER_API_URL = process.env.VITE_AUTH_SERVER_API_URL;
 
 export const POST: RequestHandler = async ({ request }) => {
-  const res = await fetch(`${AUTH_SERVER_API_URL}/auth/user/logout`, {
-    method: "POST",
-    headers: {
-      cookie: request.headers.get("cookie") || "", // ← 클라이언트 쿠키 직접 전달
-    },
-  });
+  try {
+    const authHeader = request.headers.get('authorization') ?? '';
+    // 들어온 Cookie 헤더(브라우저가 보낸)를 그대로 읽음
+    const cookieHeader = request.headers.get('cookie') ?? '';
 
-  if (!res.ok) {
-    return new Response(await res.text(), { status: res.status });
+    // 백엔드에 Cookie도 전달 -> Golang 기존 c.Cookie(...) 사용 가능
+    const res = await fetch(`${AUTH_SERVER_API_URL}/auth/user/logout`, {
+      method: 'POST',
+      headers: {
+        'Authorization': authHeader,
+        'Cookie': cookieHeader, // ✅ 핵심: 쿠키 그대로 전달
+        // 'Content-Type' 생략해도 무방(백엔드가 cookie로 읽으므로 body 필요 없음)
+      },
+      // body 생략
+      redirect: 'manual'
+    });
+
+    // 백엔드 응답 헤더 (특히 set-cookie) 그대로 클라이언트로 전달
+    const resText = await res.text();
+
+    const newHeaders = new Headers();
+    // backend에서 온 모든 헤더를 복사
+    res.headers.forEach((value, key) => {
+      // 브라우저로 전달할 때 set-cookie는 그대로 전달
+      newHeaders.append(key, value);
+    });
+
+    // 응답 본문과 상태 그대로 반환
+    return new Response(resText, {
+      status: res.status,
+      headers: newHeaders
+    });
+  } catch (err) {
+    console.error('Logout proxy failed:', err);
+    return new Response(JSON.stringify({ error: 'Logout proxy failed' }), { status: 500 });
   }
-
-  const data = await res.json();
-
-  return new Response(JSON.stringify(data), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
 };

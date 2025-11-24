@@ -1,7 +1,7 @@
 // routes/calendar/add/page.ts
 import { get } from 'svelte/store';
 import { auth, clearAuth } from '$lib/stores/auth';
-import { profileState } from '$lib/stores/profileState';
+import { profileState } from '$lib/stores/userProfile';
 import { goto } from '$app/navigation';
 
 export interface AddCalendarState {

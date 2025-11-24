@@ -13,7 +13,6 @@ export const POST: RequestHandler = async ({ request }) => {
   if (!res.ok) {
     return new Response(await res.text(), { status: res.status });
   }
-
   const data = await res.json();
   return new Response(JSON.stringify(data), {
     status: 200,

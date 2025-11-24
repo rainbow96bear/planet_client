@@ -1,5 +1,4 @@
-// src/lib/components/common/calendar/Calendar.ts
-import type { CalendarEvent, MonthData, MonthDataWithEventsMatrix  } from '$lib/types/calendar';
+import type { CalendarEvent, MonthData, MonthDataWithEventsMatrix } from '$lib/types/calendar';
 
 // 현재 연/월 계산
 export function getCurrentYearMonth(year?: number, month?: number) {
@@ -28,20 +27,22 @@ export function generateMonthData(year: number, month: number): MonthData {
   return weeks;
 }
 
-// 성능 최적화: 날짜별 이벤트 map
+// 날짜별 이벤트 map (월 넘어가는 이벤트 처리)
 export function precomputeEventsByDate(events: CalendarEvent[], year: number, month: number) {
   const map: Record<number, CalendarEvent[]> = {};
+  const targetMonth = month - 1;
+  const lastDayOfMonth = new Date(year, month, 0).getDate();
+
   for (const e of events) {
     const start = new Date(e.startAt);
     const end = new Date(e.endAt);
-    const targetMonth = month - 1;
 
-    for (let d = start.getDate(); d <= end.getDate(); d++) {
-      const date = new Date(year, targetMonth, d);
-      if (date >= start && date <= end) {
-        map[d] = map[d] ?? [];
-        map[d].push(e);
-      }
+    const firstDay = start.getMonth() === targetMonth ? start.getDate() : 1;
+    const lastDay = end.getMonth() === targetMonth ? end.getDate() : lastDayOfMonth;
+
+    for (let d = firstDay; d <= lastDay; d++) {
+      map[d] = map[d] ?? [];
+      map[d].push(e);
     }
   }
   return map;

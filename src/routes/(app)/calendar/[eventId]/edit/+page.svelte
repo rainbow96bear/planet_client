@@ -3,12 +3,12 @@
   import { page } from '$app/stores';
   import { onMount } from 'svelte';
   import { auth, clearAuth } from '$lib/stores/auth';
-  import { profileState } from '$lib/stores/profileState';
 
   import { goto } from '$app/navigation';
 	import { get } from 'svelte/store';
 	import LoginRequired from '$lib/components/common/loginRequired/LoginRequired.svelte';
 	import LoadingSpinner from '$lib/components/common/loadingSpinner/LoadingSpinner.svelte';
+	import { userProfile } from '$lib/stores/userProfile';
 
   let eventData: Record<string, any> = {};
   let isLoggedIn = false;
@@ -36,7 +36,7 @@
       else if (res.status === 401) {
         loginMessage = '권한이 없습니다. 로그인 후 다시 시도해주세요.';
         clearAuth();
-        profileState.set(null);
+        userProfile.set(null);
       } else loginMessage = '일정 정보를 불러오는 중 오류가 발생했습니다.';
     } catch (err) {
       console.error(err);
@@ -66,7 +66,7 @@
     } else if (res.status === 401) {
       loginMessage = '권한이 없습니다. 로그인 후 다시 시도해주세요.';
       clearAuth();
-      profileState.set(null);
+      userProfile.set(null);
       goto('/login');
     } else {
       loginMessage = '수정 실패';

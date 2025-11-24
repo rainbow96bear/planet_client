@@ -1,24 +1,25 @@
 import { get } from 'svelte/store';
 import { auth } from '$lib/stores/auth';
-import type { ProfileState, UserProfile } from '$lib/types/profile';
+import type { UserProfile } from '$lib/types/profile';
 import type { CalendarData } from '$lib/types/calendar';
 
-export function createInitialState(userNickName: string): ProfileState {
+export function createInitialState(nickname: string): UserProfile {
   const now = new Date();
   return {
-    profile: null,
-    isAuthValid: false,
-    isMyProfile: false,
-    isFollowing: null,
-    isLoadingProfile: true,
-    isLoadingCalendar: false,
-    isLoadingFeed: false,
+    user_id: "",
+    nickname: nickname,
+    profile_image: "",
+    bio: "",
+    email: "",
+    theme:"",
+    followerCount: 0,
+    followingCount: 0
   };
 }
 
-export async function loadProfile(userNickName: string): Promise<UserProfile | null> {
+export async function loadProfile(nickname: string): Promise<UserProfile | null> {
   try {
-    const res = await fetch(`/api/profile/${userNickName}`);
+    const res = await fetch(`/api/profile/${nickname}`);
     if (!res.ok) throw new Error('프로필 조회 실패');
     return await res.json();
   } catch (err) {
@@ -27,11 +28,11 @@ export async function loadProfile(userNickName: string): Promise<UserProfile | n
   }
 }
 
-export async function fetchIsFollowing(userNickName: string): Promise<boolean | null> {
+export async function fetchIsFollowing(nickname: string): Promise<boolean | null> {
   const token = get(auth)?.access_token;
   if (!token) return null;
   try {
-    const res = await fetch(`/api/profile/${userNickName}/follow-status`, {
+    const res = await fetch(`/api/profile/${nickname}/follow-status`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     if (!res.ok) throw new Error('팔로잉 여부 조회 실패');

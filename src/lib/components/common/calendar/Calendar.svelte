@@ -1,30 +1,31 @@
 <script lang="ts">
   import PlanCard from '$lib/components/common/plan/PlanCard.svelte';
-  import type { CalendarEvent, CalendarDayEvent } from '$lib/types/calendar';
+  import type { CalendarEvent, CalendarDayEvent, MonthData, MonthDataWithEventsMatrix } from '$lib/types/calendar';
   import { createEventDispatcher } from 'svelte';
   import styles from './Calendar.module.css';
-  import {
-    getCurrentYearMonth,
-    generateMonthData,
-    precomputeEventsByDate,
-    mapMonthDataWithEvents,
-    getCompletionStyle,
-    type MonthData,
-    type MonthDataWithEvents
-  } from './Calendar.ts';
+  import { getCurrentYearMonth, generateMonthData, precomputeEventsByDate, mapMonthDataWithEvents, getCompletionStyle } from './Calendar';
 
   export let events: CalendarEvent[] = [];
   export let completionData: Record<number, number> = {};
   export let monthData: MonthData = [];
-  export let year?: number;
-  export let month?: number;
+  export let year: number | undefined;
+  export let month: number | undefined;
 
   const dispatch = createEventDispatcher();
 
   $: ({ year: currentYear, month: currentMonth } = getCurrentYearMonth(year, month));
   $: effectiveMonthData = monthData.length > 0 ? monthData : generateMonthData(currentYear, currentMonth);
   $: eventsByDateMap = precomputeEventsByDate(events, currentYear, currentMonth);
-  $: monthDataWithEvents = mapMonthDataWithEvents(effectiveMonthData, events, completionData, currentYear, currentMonth, eventsByDateMap);
+
+  let monthDataWithEvents: MonthDataWithEventsMatrix;
+  $: monthDataWithEvents = mapMonthDataWithEvents(
+    effectiveMonthData,
+    events,
+    completionData,
+    currentYear,
+    currentMonth,
+    eventsByDateMap
+  );
 
   let selectedDayEvents: CalendarDayEvent[] = [];
   let selectedDay: number | null = null;
@@ -32,27 +33,17 @@
 
   async function handleDayClick(day: number | null) {
     if (!day) return;
-    const eventsOfDay = eventsByDateMap[day] ?? [];
-    // todos fetch (각 이벤트마다)
-    const dayEventsWithTodos: CalendarDayEvent[] = await Promise.all(
-      eventsOfDay.map(async (ev) => {
-        try {
-          const res = await fetch(`/api/todos?eventId=${ev.eventId}`);
-          const todos = await res.json();
-          return { ...ev, todos };
-        } catch {
-          return { ...ev, todos: [] };
-        }
-      })
-    );
-    selectedDayEvents = dayEventsWithTodos;
+
     selectedDay = day;
+    const eventsOfDay = eventsByDateMap[day] ?? [];
+    selectedDayEvents = eventsOfDay.map(ev => ({ ...ev, todos: [] }));
     showDayPopup = selectedDayEvents.length > 0;
+
     dispatch('daySelected', { day, events: selectedDayEvents });
   }
 
-  function onCardEdit(e) { dispatch('editEvent', e.detail); }
-  function onCardDelete(e) { dispatch('requestDeleteEvent', e.detail); }
+  function onCardEdit(e: CustomEvent<CalendarEvent>) { dispatch('editEvent', e.detail); }
+  function onCardDelete(e: CustomEvent<CalendarEvent>) { dispatch('requestDeleteEvent', e.detail); }
 </script>
 
 <div class={styles.calendarCard}>
@@ -68,14 +59,18 @@
         {#each week as dayObj}
           <div class={styles.calendarCell}>
             {#if dayObj}
-              <div class={`${styles.dayCell} ${dayObj.dayEvents.length>0?styles.hasEvents:''}`}
-                   style="background: {getCompletionStyle(dayObj.completion)}"
-                   on:click={() => handleDayClick(dayObj.day)}
-                   role="button" tabindex="0">
+              <div
+                class={`${styles.dayCell} ${dayObj.dayEvents.length>0?styles.hasEvents:''}`}
+                style="background: {getCompletionStyle(dayObj.completion)}"
+                on:click={() => handleDayClick(dayObj.day)}
+                on:keydown={(e) => { if(e.key === 'Enter' || e.key === ' ') handleDayClick(dayObj.day); }}
+                role="button"
+                tabindex="0"
+              >
                 <span class={`${styles.dayNumber} ${dayObj.isSunday?styles.sunday:''} ${dayObj.isSaturday?styles.saturday:''}`}>
                   {dayObj.day}
                 </span>
-                {#if dayObj.dayEvents.length>0}
+                {#if dayObj.dayEvents.length > 0}
                   <div class={styles.dayEvents}>
                     {#each dayObj.dayEvents.slice(0,2) as event}
                       <div class={styles.eventItem} title={event.title}>
@@ -83,7 +78,7 @@
                         <span class={styles.eventTitle}>{event.title}</span>
                       </div>
                     {/each}
-                    {#if dayObj.dayEvents.length>2}
+                    {#if dayObj.dayEvents.length > 2}
                       <div class={styles.moreEvents}>+{dayObj.dayEvents.length-2}개</div>
                     {/if}
                   </div>

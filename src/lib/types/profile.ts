@@ -1,19 +1,10 @@
-export type ProfileState = {
-  profile: UserProfile | null;
-  isAuthValid: boolean;
-  isMyProfile: boolean;
-  isFollowing: boolean | null;
-  isLoadingProfile: boolean;
-  isLoadingCalendar: boolean;
-  isLoadingFeed: boolean;
-};
-
 export interface UserProfile {
-  uuid: string;
+  user_id: string;
   nickname: string;
   profile_image: string;
   bio?: string;
   email?: string;
+  theme:string;
   followerCount: number;
   followingCount: number;
 }

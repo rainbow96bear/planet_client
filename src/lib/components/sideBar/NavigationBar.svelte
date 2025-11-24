@@ -1,64 +1,65 @@
-<!-- src/lib/components/layout/LeftSidebar.svelte -->
 <script lang="ts">
   import { goto } from '$app/navigation';
-	import type { UserProfile } from '$lib/types/profile';
-	import ProfileImg from '../common/profileImg/profileImg.svelte';
+  import ProfileImg from '../common/profileImg/profileImg.svelte';
+  import type { UserProfile } from '$lib/types/profile';
+	import { userProfile } from '$lib/stores/userProfile';
+
+  // store 구독
+  let profile: UserProfile | null = null;
+  userProfile.subscribe(value => profile = value);
 
   export let currentPath: string = '/';
-  export let isLoggedIn: boolean = false;
-  export let profile:UserProfile|null=null;
-  console.log("dk")
+
   function isActive(path: string) {
     return currentPath === path;
   }
 </script>
 
-  <div class="sidebar-content">
-    <!-- 네비게이션 메뉴 -->
-    <nav class="nav-menu">
-      <button class="nav-item" class:active={isActive('/explore')} on:click={() => goto('/explore')}>
-        <span class="nav-icon">🌍</span>
-        <span class="nav-text">탐색</span>
-      </button>
-      {#if isLoggedIn}
-        <button class="nav-item" class:active={isActive('/notifications')} on:click={() => goto('/notifications')}>
-          <span class="nav-icon">🔔</span>
-          <span class="nav-text">알림</span>
-        </button>
+<div class="sidebar-content">
+  <nav class="nav-menu">
+    <button class="nav-item" class:active={isActive('/explore')} on:click={() => goto('/explore')}>
+      <span class="nav-icon">🌍</span>
+      <span class="nav-text">탐색</span>
+    </button>
 
-        <button class="nav-item" class:active={isActive('/messages')} on:click={() => goto('/messages')}>
-          <span class="nav-icon">💬</span>
-          <span class="nav-text">메시지</span>
-        </button>
-
-        <button class="nav-item" class:active={isActive('/bookmarks')} on:click={() => goto('/bookmarks')}>
-          <span class="nav-icon">🔖</span>
-          <span class="nav-text">북마크</span>
-        </button>
-
-        <button class="nav-item" class:active={isActive('/settings')} on:click={() => goto('/settings')}>
-          <span class="nav-icon">⚙️</span>
-          <span class="nav-text">설정</span>
-        </button>
-      {/if}
-    </nav>
-
-    {#if isLoggedIn}
-      <!-- 새 글 작성 버튼 -->
-      <button class="create-btn" on:click={() => goto('/create')}>
-        <span class="create-icon">✏️</span>
-        <span>새 할 일 작성</span>
+    {#if profile}
+      <button class="nav-item" class:active={isActive('/notifications')} on:click={() => goto('/notifications')}>
+        <span class="nav-icon">🔔</span>
+        <span class="nav-text">알림</span>
       </button>
 
-      <!-- 사용자 정보 -->
-      <button class="user-profile" on:click={() => goto('/profile')}>
-        <ProfileImg src={profile?.profile_image} alt={profile?.nickname} size={40} />
-        <div class="profile-info">
-          <div class="profile-name">{profile?.nickname} 프로필</div>
-        </div>
+      <button class="nav-item" class:active={isActive('/messages')} on:click={() => goto('/messages')}>
+        <span class="nav-icon">💬</span>
+        <span class="nav-text">메시지</span>
+      </button>
+
+      <button class="nav-item" class:active={isActive('/bookmarks')} on:click={() => goto('/bookmarks')}>
+        <span class="nav-icon">🔖</span>
+        <span class="nav-text">북마크</span>
+      </button>
+
+      <button class="nav-item" class:active={isActive('/settings')} on:click={() => goto('/settings')}>
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-text">설정</span>
       </button>
     {/if}
-  </div>
+  </nav>
+
+  {#if profile}
+    <button class="create-btn" on:click={() => goto('/create')}>
+      <span class="create-icon">✏️</span>
+      <span>새 할 일 작성</span>
+    </button>
+
+    <button class="user-profile" on:click={() => goto('/profile')}>
+      <ProfileImg src={profile.profile_image} alt={profile.nickname} size={40} />
+      <div class="profile-info">
+        <div class="profile-name">{profile.nickname} 프로필</div>
+      </div>
+    </button>
+  {/if}
+</div>
+
 
 <style>
   .sidebar-content {

@@ -2,32 +2,25 @@
   import { createEventDispatcher } from 'svelte';
   import { goto } from '$app/navigation';
   import ProfileImg from '../common/profileImg/profileImg.svelte';
-	import type { UserProfile } from '$lib/types/profile';
+  import { userProfile } from '$lib/stores/userProfile';
+  import { derived } from 'svelte/store';
 
-  export let isLoggedIn = false;
-  export let profile:UserProfile|null;
-  export let notificationCount = 0;
-  export let isMenuOpen = false; // ✅ 부모에서 전달받음
-
+  export let isMenuOpen : boolean;
   const dispatch = createEventDispatcher();
 
   function handleToggleMenu() {
     dispatch('toggleMenu');
   }
+
+  // store 구독
+  const profile = derived(userProfile, $profile => $profile);
 </script>
 
 <div class="header-actions">
-  {#if isLoggedIn}
+  {#if $profile}
     <button class="icon-btn desktop-only" on:click={() => goto('/explore')} title="탐색">🌍</button>
-    <button class="icon-btn" on:click={() => goto('/notifications')} title="알림">
-      🔔
-      {#if notificationCount > 0}
-        <span class="notification-badge">{notificationCount > 99 ? '99+' : notificationCount}</span>
-      {/if}
-    </button>
-    <button class="icon-btn desktop-only" on:click={() => goto('/messages')} title="메시지">💬</button>
     <button class="avatar-btn" on:click={() => goto('/profile')} title="프로필">
-        <ProfileImg src={profile?.profile_image} alt={profile?.nickname} size={40} />
+      <ProfileImg src={$profile.profile_image} alt={$profile.nickname} size={40} />
     </button>
     <button class="menu-btn mobile-only" on:click={handleToggleMenu}>
       {isMenuOpen ? '✕' : '☰'}

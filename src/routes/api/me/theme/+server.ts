@@ -7,7 +7,7 @@ const USER_SERVER_API_URL = process.env.VITE_USER_SERVER_API_URL;
 export const GET: RequestHandler = async ({ request }) => {
   try {
     const token = request.headers.get('authorization');
-    const res = await fetch(`${USER_SERVER_API_URL}/user/theme`, {
+    const res = await fetch(`${USER_SERVER_API_URL}/me/theme`, {
       method: 'GET',
       headers: token ? { 'Authorization': token } : {},
     });
@@ -31,7 +31,7 @@ export const POST: RequestHandler = async ({ request }) => {
     const token = request.headers.get('authorization');
     const data = await request.json();
 
-    const res = await fetch(`${USER_SERVER_API_URL}/user/theme`, {
+    const res = await fetch(`${USER_SERVER_API_URL}/me/theme`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -45,7 +45,7 @@ export const POST: RequestHandler = async ({ request }) => {
 
     return new Response(body, { status: res.status, headers });
   } catch (err) {
-    console.error('POST /api/user/theme error:', err);
+    console.error('POST /api/profile/theme error:', err);
     return new Response(JSON.stringify({ error: '서버 내부 오류' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }

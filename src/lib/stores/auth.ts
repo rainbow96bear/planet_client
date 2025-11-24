@@ -66,6 +66,11 @@ export async function initAuth(options?: { fetch?: typeof fetch }) {
     }
 
     const data = await res.json();
+    if (!data.access_token || typeof data.access_token !== 'string') {
+      console.error("No access token returned from server", data);
+      clearAuth();
+      return;
+    }
     const decoded: any = jwtDecode(data.access_token);
 
     auth.set({

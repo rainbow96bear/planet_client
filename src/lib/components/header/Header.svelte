@@ -3,12 +3,8 @@
   import SearchBar from './SearchBar.svelte';
   import HeaderActions from './HeaderActions.svelte';
   import MobileMenu from './MobileMenu.svelte';
-	import type { UserProfile } from '$lib/types/profile';
-
-  export let isLoggedIn = false;
-  export let notificationCount = 0;
-  export let profile:UserProfile|null;
-  export let recentSearches: string[] = [];
+	import { get } from 'svelte/store';
+	import { userProfile } from '$lib/stores/userProfile';
 
   let isMenuOpen = false;
 
@@ -18,44 +14,30 @@
 
   function handleSearch(event: CustomEvent<{ query: string }>) {
     const query = event.detail.query.trim();
-    if (query) {
-      goto(`/search?q=${encodeURIComponent(query)}`);
-    }
+    if (query) goto(`/search?q=${encodeURIComponent(query)}`);
   }
+  console.log(get(userProfile))
 </script>
 
 <div class="header">
   <div class="header-container">
-    <!-- 로고 -->
     <button class="logo" on:click={() => goto('/')}>
       <div class="logo-icon">🪐</div>
       <span class="logo-text">Planet</span>
     </button>
 
-    <!-- 검색바 (데스크톱) -->
-    {#if isLoggedIn}
-      <SearchBar
-        placeholder="계획, 친구, 태그 검색..."
-        recentSearches={recentSearches}
-        on:search={handleSearch}
-      />
+    {#if $userProfile}
+      <SearchBar placeholder="계획, 친구, 태그 검색..." on:search={handleSearch}/>
     {/if}
 
-    <!-- 우측 액션 -->
-    <HeaderActions
-      {isLoggedIn}
-      {notificationCount}
-      {profile}
-      {isMenuOpen}
-      on:toggleMenu={toggleMenu}
-    />
+    <HeaderActions {isMenuOpen} on:toggleMenu={toggleMenu} />
   </div>
 
-  <!-- 모바일 메뉴 별도 컴포넌트 -->
-  {#if isMenuOpen && isLoggedIn}
+  {#if $userProfile && isMenuOpen}
     <MobileMenu on:close={toggleMenu} />
   {/if}
 </div>
+
 
 <style>
 /* 공통 Header 스타일 */

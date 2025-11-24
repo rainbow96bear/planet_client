@@ -14,8 +14,8 @@
     loadCalendar, 
     loadFeed
   } from './page';
-  import type { ProfileState, UserProfile } from '$lib/types/profile';
-  import { auth, profileState } from '$lib/stores';
+  import type { UserProfile } from '$lib/types/profile';
+  import { auth, userProfile } from '$lib/stores';
 	import type { CalendarEvent } from '$lib/types/calendar';
 
   $: userNickName = $page.params.userNickName ?? '';
@@ -199,7 +199,7 @@
       <Calendar
         events={calendarData.events}
         monthData={calendarData.monthData}
-        completionData={calendarData.completionData}\
+        completionData={calendarData.completionData ?? {}}
         year={calendarData.year}
         month={calendarData.month}
         on:addEvent={handleAddEvent}
@@ -216,7 +216,7 @@
 {#if activeView === 'feed'}
   <div class={styles.content}>
     {#if isLoadingFeed}
-      <LoadingSpinner message="피드를 불러오는 중..." />
+      <LoadingSpinner message={"피드를 불러오는 중..."} />
     {:else if feedData.length > 0}
       <div class={styles.feedList}>
         {#each feedData as feed (feed.id)}

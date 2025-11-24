@@ -4,11 +4,11 @@ const USER_SERVER_API_URL = process.env.VITE_USER_SERVER_API_URL;
 
 export const GET: RequestHandler = async ({ params, request }) => {
   // params.userNickName 타입이 string | undefined
-  const userNickName: string = params.userNickName ?? '';
+  const nickname: string = params.nickname ?? '';
 
   const authHeader = request.headers.get('authorization') || '';
 
-  const res = await fetch(`${USER_SERVER_API_URL}/profile/${userNickName}/follow-status`, {
+  const res = await fetch(`${USER_SERVER_API_URL}/users/${nickname}/follow/status`, {
     method: 'GET',
     headers: {
       Authorization: authHeader
@@ -22,3 +22,4 @@ export const GET: RequestHandler = async ({ params, request }) => {
     headers: { 'Content-Type': 'application/json' }
   });
 };
+
