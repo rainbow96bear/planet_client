@@ -16,7 +16,6 @@
     const query = event.detail.query.trim();
     if (query) goto(`/search?q=${encodeURIComponent(query)}`);
   }
-  console.log(get(userProfile))
 </script>
 
 <div class="header">

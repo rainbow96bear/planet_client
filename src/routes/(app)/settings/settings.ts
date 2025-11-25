@@ -1,6 +1,6 @@
 import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
-import { theme, auth, isLoggedIn, clearAuth, initAuth, profileState } from '$lib/stores';
+import { theme, auth, isLoggedIn, clearAuth, initAuth, userProfile } from '$lib/stores';
 
 //
 // 프로필 불러오기
@@ -10,17 +10,17 @@ export async function fetchUserProfile() {
   if (!token) return;
 
   try {
-    const res = await fetch('/api/profile/me', {
+    const res = await fetch('/api/me/profile', {
       headers: { Authorization: `Bearer ${token}` }
     });
 
     if (!res.ok) throw new Error('프로필 불러오기 실패');
 
     const data = await res.json();
-    profileState.set(data);
+    userProfile.set(data);
   } catch (err) {
     console.error(err);
-    profileState.set(null);
+    userProfile.set(null);
   }
 }
 
@@ -35,7 +35,7 @@ export async function handleThemeChange(event: CustomEvent<{ theme: 'light' | 'd
   if (!token) return;
 
   try {
-    await fetch('/api/profile/theme', {
+    await fetch('/api/me/theme', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -62,7 +62,7 @@ export async function handleLogout() {
     });
 
     clearAuth();
-    profileState.set(null);
+    userProfile.set(null);
     goto('/auth/login');
   } catch (err) {
     console.error('로그아웃 실패:', err);
@@ -81,7 +81,7 @@ export async function initSettingsPage() {
 
   await fetchUserProfile();
 
-  if (!get(profileState)) {
+  if (!get(userProfile)) {
     clearAuth();
     return false; // 프로필 없음
   }

@@ -21,8 +21,8 @@ export function initLayout(
 
       try {
         const [profileRes, themeRes] = await Promise.all([
-          fetch('/api/profile/me', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('/api/profile/theme', { headers: { Authorization: `Bearer ${token}` } })
+          fetch('/api/me/profile', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/me/theme', { headers: { Authorization: `Bearer ${token}` } })
         ]);
 
         const profileData = profileRes.ok ? await profileRes.json() : null;

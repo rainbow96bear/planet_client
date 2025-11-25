@@ -3,7 +3,7 @@ import type { RequestHandler } from '@sveltejs/kit';
 const USER_SERVER_API_URL = process.env.VITE_USER_SERVER_API_URL;
 
 export const GET: RequestHandler = async ({ params, url }) => {
-  const userNickName = params.userNickName;
+  const nickname = params.nickname;
 
   // year, month 쿼리 파라미터 가져오기
   const year = url.searchParams.get('year');
@@ -14,7 +14,7 @@ export const GET: RequestHandler = async ({ params, url }) => {
   }
 
   // 백엔드 API 호출 시 쿼리 붙이기
-  const apiUrl = `${USER_SERVER_API_URL}/users/${userNickName}/calendar?year=${year}&month=${month}`;
+  const apiUrl = `${USER_SERVER_API_URL}/users/${nickname}/calendar?year=${year}&month=${month}`;
 
   const res = await fetch(apiUrl, { method: 'GET' });
 

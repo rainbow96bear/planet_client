@@ -28,7 +28,7 @@
 
     const eventId = $page.params.eventId;
     try {
-      const res = await fetch(`/api/calendar/${eventId}`, {
+      const res = await fetch(`/api/me/calendar/events/${eventId}`, {
         headers: { Authorization: `Bearer ${tokenState.access_token}` },
       });
 
@@ -54,7 +54,7 @@
     }
 
     const eventId = $page.params.eventId;
-    const res = await fetch(`/api/calendar/${eventId}`, {
+    const res = await fetch(`/api/me/calendar/events/${eventId}`, {
       method: 'PUT',
       headers: { Authorization: `Bearer ${tokenState.access_token}` },
       body: event.detail,

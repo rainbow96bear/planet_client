@@ -18,7 +18,7 @@
   import { auth, userProfile } from '$lib/stores';
 	import type { CalendarEvent } from '$lib/types/calendar';
 
-  $: userNickName = $page.params.userNickName ?? '';
+  $: nickname = $page.params.nickname ?? '';
 
   // -----------------------------
   // state 정의
@@ -58,16 +58,16 @@
     isLoadingProfile = true;
 
     // 프로필 불러오기
-    profile = await loadProfile(userNickName);
+    profile = await loadProfile(nickname);
 
     // 로그인 및 내 프로필 판단
     const authData = get(auth);
-    isMyProfile = authData?.nickname === userNickName;
-    isFollowing = isMyProfile ? null : (await fetchIsFollowing(userNickName));
+    isMyProfile = authData?.nickname === nickname;
+    isFollowing = isMyProfile ? null : (await fetchIsFollowing(nickname));
 
     // 캘린더 초기화
     isLoadingCalendar = true;
-    const initialCalendar = await loadCalendar(userNickName, currentYear, currentMonth);
+    const initialCalendar = await loadCalendar(nickname, currentYear, currentMonth);
     calendarData = {
       events: initialCalendar.events ?? [],
       monthData: initialCalendar.monthData ?? [[]],
@@ -89,7 +89,7 @@
 
     if (view === 'calendar') {
       isLoadingCalendar = true;
-      const newCalendar = await loadCalendar(userNickName, currentYear, currentMonth);
+      const newCalendar = await loadCalendar(nickname, currentYear, currentMonth);
       calendarData = {
         events: newCalendar.events ?? [],
         monthData: newCalendar.monthData ?? [[]],
@@ -100,7 +100,7 @@
       isLoadingCalendar = false;
     } else {
       isLoadingFeed = true;
-      feedData = await loadFeed(userNickName) ?? [];
+      feedData = await loadFeed(nickname) ?? [];
       isLoadingFeed = false;
     }
   }
@@ -119,7 +119,7 @@
     }
 
     isLoadingCalendar = true;
-    const newCalendar = await loadCalendar(userNickName, currentYear, currentMonth);
+    const newCalendar = await loadCalendar(nickname, currentYear, currentMonth);
     calendarData = {
       events: newCalendar.events ?? [],
       monthData: newCalendar.monthData ?? [[]],
@@ -149,7 +149,7 @@
 
     try {
       const token = localStorage.getItem('access_token');
-      const res = await fetch(`/api/calendar/${event.eventId}`, {
+      const res = await fetch(`/api/me/calendar/events/${event.eventId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });

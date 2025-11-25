@@ -12,7 +12,7 @@ export const load: PageLoad = async () => {
   }
 
   try {
-    const res = await fetch('/api/profile/me', {
+    const res = await fetch('/api/me/profile', {
       headers: { Authorization: `Bearer ${tokenState.access_token}` }
     });
 

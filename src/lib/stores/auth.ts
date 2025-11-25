@@ -47,16 +47,18 @@ let refreshing = false;
 export async function initAuth(options?: { fetch?: typeof fetch }) {
   if (refreshing) return;
 
-  const current = get(auth);
+  const tokenState = get(auth);
 
-  if (current.access_token && !get(isTokenExpired)) return;
-
+  if (tokenState.access_token && !get(isTokenExpired)) return;
+  console.log(tokenState.access_token)
+  console.log(get(isTokenExpired))
+  console.log(tokenState.access_token && !get(isTokenExpired))
   refreshing = true;
   const myFetch = options?.fetch ?? fetch;
-
   try {
     const res = await myFetch('/api/auth/token/access', {
       method: 'POST',
+      headers: { Authorization: `Bearer ${tokenState.access_token}` },
       credentials: 'include'
     });
 

@@ -1,7 +1,7 @@
 // routes/calendar/add/page.ts
 import { get } from 'svelte/store';
 import { auth, clearAuth } from '$lib/stores/auth';
-import { profileState } from '$lib/stores/userProfile';
+import { userProfile } from '$lib/stores/userProfile';
 import { goto } from '$app/navigation';
 
 export interface AddCalendarState {
@@ -37,7 +37,7 @@ export async function submitCalendar(event: CustomEvent<FormData>) {
     return;
   }
   console.log(JSON.stringify(event.detail))
-  const res = await fetch('/api/calendar', {
+  const res = await fetch('/api/me/calendar/events', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${tokenState.access_token}`,
@@ -52,7 +52,7 @@ export async function submitCalendar(event: CustomEvent<FormData>) {
   } else if (res.status === 401) {
     alert('권한이 없습니다. 로그인 후 다시 시도해주세요.');
     clearAuth();
-    profileState.set(null);
+    userProfile.set(null);
     goto('/login');
   } else {
     alert('일정 추가 실패');

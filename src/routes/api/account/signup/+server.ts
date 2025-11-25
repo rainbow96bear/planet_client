@@ -8,7 +8,7 @@ export const POST: RequestHandler = async ({ request }) => {
     const formData = await request.formData();
 
     // Golang 백엔드로 요청 (쿠키 전달)
-    const res = await fetch(`${AUTH_SERVER_API_URL}/auth/user/signup`, {
+    const res = await fetch(`${AUTH_SERVER_API_URL}/account/signup`, {
       method: "POST",
       body: formData,
       headers: {

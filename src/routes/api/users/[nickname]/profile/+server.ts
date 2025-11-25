@@ -4,7 +4,7 @@ import type { UserProfile } from '$lib/types/profile';
 const USER_SERVER_API_URL = process.env.VITE_USER_SERVER_API_URL;
 
 export const GET: RequestHandler = async ({ params }) => {
-  const res = await fetch(`${USER_SERVER_API_URL}/users/${params.userNickName}/profile`, {
+  const res = await fetch(`${USER_SERVER_API_URL}/users/${params.nickname}/profile`, {
     method:"GET",
   });
  
