@@ -1,64 +1,109 @@
+/* page.module.css */
+
+/* --- Layout --- */
 .container {
   margin: 0 auto;
+  max-width: 900px; /* 컨텐츠 중앙 정렬 및 최대 너비 설정 */
+  width: 100%;
   min-height: 100vh;
+  padding: 0 1rem 3rem 1rem; /* 좌우 여백 및 하단 여백 추가 */
+  background: var(--bg-page, #f9f9f9);
+}
+
+.content {
+  /* 캘린더나 피드가 들어가는 공간. 좌우 패딩은 container에서 이미 처리 */
+  padding: 0;
+  margin-top: 1rem;
+}
+
+/* --- Tabs --- */
+.tabsWrapper {
+  /* 탭을 중앙 정렬하고 상단에 여백 주기 */
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+  padding: 0 0.5rem;
 }
 
 .tabs {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
+  display: inline-flex;
+  gap: 0;
+  /* 탭을 그룹화하는 배경 */
+  background: var(--bg-secondary, #eee);
+  border-radius: 10px;
+  padding: 4px;
+  box-shadow: var(--shadow-sm);
+  width: 100%;
+  max-width: 400px; /* 탭 그룹의 최대 너비 제한 */
 }
 
 .tabs button {
   flex: 1;
-  padding: 0.75rem;
+  padding: 0.75rem 0.5rem;
   border: none;
-  background: var(--bg-secondary);
+  background: transparent; /* 기본 배경 투명 */
   cursor: pointer;
-  border-radius: 0.5rem;
+  border-radius: 8px; /* 탭 내부 버튼의 모서리 둥글게 */
   transition: all 0.2s;
+  font-weight: 500;
+  color: var(--text-secondary, #666);
+  font-size: 1rem;
 }
 
 .tabs button.active {
-  background: var(--color-accent);
-  color: white;
-  font-weight: bold;
+  background: var(--bg-primary, white); /* 활성화된 탭은 밝은 배경 */
+  color: var(--color-accent-dark, #333);
+  font-weight: 700;
+  box-shadow: var(--shadow-md, 0 4px 10px rgba(0, 0, 0, 0.1)); /* 입체감 부여 */
 }
 
+/* --- Month Controls (캘린더 네비게이션) --- */
 .monthControls {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  margin: 1rem 0;
+  margin: 2rem 0 1rem 0; /* 상단 여백 추가 */
+  padding: 0 1rem;
 }
 
-.monthControls button {
-  padding: 0.5rem 1rem;
-  border: none;
-  background: var(--bg-secondary);
-  border-radius: 0.5rem;
+.monthButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--border-color, #ddd);
+  background: var(--bg-primary, white);
+  border-radius: 50%; /* 원형 버튼 */
   cursor: pointer;
+  color: var(--color-accent-dark, #333);
+  transition: background 0.2s;
 }
 
-.monthControls span {
-  font-size: 1.1rem;
-  font-weight: 600;
+.monthButton:hover {
+  background: var(--bg-secondary, #f0f0f0);
 }
 
-.content {
-  padding: 1rem;
+.currentMonthLabel {
+  font-size: 1.25rem; /* 월/연도 강조 */
+  font-weight: 700;
+  color: var(--text-dark, #2c3e50);
 }
 
+/* --- Feed List --- */
 .feedList {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem; /* 피드 카드 간 간격 확대 */
 }
 
 .emptyMessage {
   text-align: center;
-  padding: 3rem 1rem;
-  color: var(--text-secondary);
+  padding: 5rem 1rem;
+  color: var(--text-secondary, #999);
+  background: var(--bg-primary, white);
+  border-radius: 1rem;
+  box-shadow: var(--shadow-sm);
+  font-size: 1.1rem;
 }

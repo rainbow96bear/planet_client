@@ -1,0 +1,199 @@
+/* Login.module.css */
+
+/* 사용자 정의 변수 (전체 테마에 맞춰 조정 가능) */
+:root {
+  --color-primary-light: #7DBDB6; /* 민트 계열 */
+  --color-primary-dark: #8B9DC3;  /* 블루 계열 */
+  --color-text-dark: #2c3e50;    /* 진한 텍스트 */
+  --color-text-secondary: #7f8c8d; /* 보조 텍스트 */
+}
+
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  /* 부드러운 우주 배경 그라데이션 */
+  background: linear-gradient(180deg, #F0F4F7 0%, #E6EBF0 100%);
+  font-family: 'Pretendard', sans-serif;
+}
+
+/* 배경 행성 장식 */
+.bgPlanet {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.6; /* 부드럽게 */
+}
+
+.planet1 {
+  top: 5rem;
+  right: 2.5rem;
+  width: 12rem;
+  height: 12rem;
+  background: rgba(125, 189, 182, 0.3); /* 변수 활용 대신 직접 rgba 값 사용 */
+  filter: blur(80px);
+}
+
+.planet2 {
+  bottom: 5rem;
+  left: 2.5rem;
+  width: 18rem;
+  height: 18rem;
+  background: rgba(139, 157, 195, 0.25);
+  filter: blur(80px);
+}
+
+.planet3 {
+  top: 50%;
+  left: 20%;
+  width: 10rem;
+  height: 10rem;
+  background: rgba(184, 164, 201, 0.2);
+  filter: blur(60px);
+}
+
+.contentWrapper {
+  width: 100%;
+  max-width: 25rem;
+  position: relative;
+  z-index: 10;
+}
+
+/* 로고 섹션 */
+.logoSection {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.logoCircle {
+  display: inline-block;
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 50%;
+  /* 로고 색상 그라데이션 강조 */
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary-dark));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px rgba(125, 189, 182, 0.4);
+  margin-bottom: 1rem;
+}
+
+.logoEmoji {
+  font-size: 2.8rem;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+}
+
+/* 로고 텍스트 버튼 스타일 */
+.logoButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+}
+
+.logoText {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  /* 텍스트 그라데이션 */
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary-dark));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.tagline {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+/* 로그인 카드 */
+.loginCard {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 2.5rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(125, 189, 182, 0.1);
+}
+
+.cardTitle {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.welcomeText {
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  line-height: 1.7;
+  margin-bottom: 2.5rem;
+}
+
+.welcomeText p {
+  margin: 0;
+}
+
+.btnList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.bottomText {
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* 하단 안내 문구 */
+.footerText {
+  margin-top: 3rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #9CA3AF;
+  line-height: 1.5;
+}
+
+.footerText p {
+  margin: 0;
+}
+
+/* 반응형 */
+@media (max-width: 640px) {
+  .logoCircle {
+    width: 5rem;
+    height: 5rem;
+  }
+
+  .logoEmoji {
+    font-size: 2.5rem;
+  }
+
+  .logoText {
+    font-size: 2rem;
+  }
+
+  .loginCard {
+    padding: 1.5rem;
+  }
+
+  .cardTitle {
+    font-size: 1.5rem;
+  }
+
+  .welcomeText {
+    font-size: 0.9rem;
+  }
+}
