@@ -3,7 +3,7 @@
   import KakaoLoginBtn from "$lib/components/login/KakaoLoginBtn.svelte"; 
 	import { goto } from "$app/navigation";
   // CSS 모듈 임포트
-  import styles from './Login.module.css';
+  import styles from './page.module.css';
 
   const KakaoOauthProviders : Provider = {
     name: 'Kakao',
@@ -16,8 +16,8 @@
    * @param provider - 로그인 제공자 정보
    */
   function handleLogin(provider: Provider) {
-    const currentPath = window.location.pathname; 
-    localStorage.setItem('redirectAfterLogin', currentPath);
+    const previousUrl = document.referrer || '/';
+    localStorage.setItem('redirectAfterLogin', previousUrl);
     window.location.href = provider.url;
   }
 </script>

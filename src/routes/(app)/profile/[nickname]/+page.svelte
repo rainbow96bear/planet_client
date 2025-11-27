@@ -58,14 +58,13 @@
   onMount(async () => {
     isLoadingProfile = true;
 
-    // 프로필 불러오기
-    profile = await loadProfile(nickname);
-
     // 로그인 및 내 프로필 판단
     const authData = get(auth);
     isMyProfile = authData?.nickname === nickname;
     isFollowing = isMyProfile ? null : (await fetchIsFollowing(nickname));
-
+    // 프로필 불러오기
+    profile = await loadProfile(nickname, isMyProfile);
+console.log(profile)
     // 캘린더 초기화
     isLoadingCalendar = true;
     // 초기 로드 시점의 currentYear/Month 사용

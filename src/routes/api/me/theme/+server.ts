@@ -25,14 +25,14 @@ export const GET: RequestHandler = async ({ request }) => {
   }
 };
 
-// POST: 사용자 테마 변경
-export const POST: RequestHandler = async ({ request }) => {
+// PATCH: 사용자 테마 변경
+export const PATCH: RequestHandler = async ({ request }) => {
   try {
     const token = request.headers.get('authorization');
     const data = await request.json();
 
     const res = await fetch(`${USER_SERVER_API_URL}/me/theme`, {
-      method: 'POST',
+      method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { 'Authorization': token } : {}),

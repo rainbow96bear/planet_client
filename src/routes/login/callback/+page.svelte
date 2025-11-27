@@ -9,11 +9,11 @@
     const url = new URL(window.location.href);
     const status = url.searchParams.get('status');
     const code = url.searchParams.get('code');
-
     if (status === 'success') {
       try {
         // 로그인 전 페이지로 이동
         const redirect = localStorage.getItem('redirectAfterLogin') || '/';
+        console.log(redirect)
         localStorage.removeItem('redirectAfterLogin');
         goto(redirect);
       } catch (err) {

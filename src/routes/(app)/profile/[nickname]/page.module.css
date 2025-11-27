@@ -1,109 +1,132 @@
-/* page.module.css */
+/* 파일 경로: src/routes/(app)/[nickname]/page.module.css (다크모드 색상 개선) */
 
+/* ----------------------------- */
 /* --- Layout --- */
+/* ----------------------------- */
 .container {
-  margin: 0 auto;
-  max-width: 900px; /* 컨텐츠 중앙 정렬 및 최대 너비 설정 */
-  width: 100%;
-  min-height: 100vh;
-  padding: 0 1rem 3rem 1rem; /* 좌우 여백 및 하단 여백 추가 */
-  background: var(--bg-page, #f9f9f9);
+    /* 전역 배경색 및 텍스트 색상 사용 */
+    background: var(--bg-primary); 
+    color: var(--text-primary);
+    margin: 0 auto;
+    width: 100%;
+    min-height: 100vh;
 }
 
 .content {
-  /* 캘린더나 피드가 들어가는 공간. 좌우 패딩은 container에서 이미 처리 */
-  padding: 0;
-  margin-top: 1rem;
+    padding: 0;
+    margin-top: 1.5rem; /* 탭 아래 여백 증가 */
 }
 
-/* --- Tabs --- */
+/* ----------------------------- */
+/* --- Tabs --- (개선된 캡슐형 디자인) */
+/* ----------------------------- */
 .tabsWrapper {
-  /* 탭을 중앙 정렬하고 상단에 여백 주기 */
-  display: flex;
-  justify-content: center;
-  margin-top: 1.5rem;
-  padding: 0 0.5rem;
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem; 
+    padding: 0 0.5rem;
 }
 
 .tabs {
-  display: inline-flex;
-  gap: 0;
-  /* 탭을 그룹화하는 배경 */
-  background: var(--bg-secondary, #eee);
-  border-radius: 10px;
-  padding: 4px;
-  box-shadow: var(--shadow-sm);
-  width: 100%;
-  max-width: 400px; /* 탭 그룹의 최대 너비 제한 */
+    display: inline-flex;
+    gap: 0.5rem; 
+    /* 🚨 개선: 배경색을 다크 모드에 맞게 var(--bg-secondary) 사용 */
+    background: var(--bg-secondary); 
+    border-radius: 12px; 
+    padding: 6px; 
+    box-shadow: none; 
+    width: 100%;
+    max-width: 350px; 
 }
 
 .tabs button {
-  flex: 1;
-  padding: 0.75rem 0.5rem;
-  border: none;
-  background: transparent; /* 기본 배경 투명 */
-  cursor: pointer;
-  border-radius: 8px; /* 탭 내부 버튼의 모서리 둥글게 */
-  transition: all 0.2s;
-  font-weight: 500;
-  color: var(--text-secondary, #666);
-  font-size: 1rem;
+    flex: 1;
+    padding: 0.75rem 0.5rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 10px; 
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+    font-weight: 600; 
+    /* 🚨 개선: 일반 텍스트 색상을 var(--text-secondary) 사용 */
+    color: var(--text-secondary);
+    font-size: 0.95rem; 
+    position: relative;
+    z-index: 1; 
+}
+
+.tabs button:hover {
+    /* 🚨 개선: 호버 시 텍스트 색상을 var(--text-primary) 사용 */
+    color: var(--text-primary); 
+    /* 🚨 개선: 호버 시 배경색을 var(--bg-tertiary) 사용 (var(--bg-hover)가 없다면) */
+    background: var(--bg-tertiary, #e0e0e0); 
 }
 
 .tabs button.active {
-  background: var(--bg-primary, white); /* 활성화된 탭은 밝은 배경 */
-  color: var(--color-accent-dark, #333);
-  font-weight: 700;
-  box-shadow: var(--shadow-md, 0 4px 10px rgba(0, 0, 0, 0.1)); /* 입체감 부여 */
+    /* 🚨 개선: 활성화된 탭 배경은 var(--bg-primary) 사용 */
+    background: var(--bg-primary); 
+    /* 🚨 개선: 활성화된 탭 텍스트는 var(--color-primary) 또는 var(--color-accent) 사용 */
+    color: var(--color-primary, #1a73e8); 
+    font-weight: 700;
+    
+    /* 🌟 활성화된 탭에 입체감과 깊이 부여 (다크 모드에 맞게 그림자 색상 조정 필요) */
+    box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.2)); 
 }
 
+/* ----------------------------- */
 /* --- Month Controls (캘린더 네비게이션) --- */
+/* ----------------------------- */
 .monthControls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  margin: 2rem 0 1rem 0; /* 상단 여백 추가 */
-  padding: 0 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin: 2rem 0 1.5rem 0; 
+    padding: 0 1rem;
 }
 
 .monthButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border: 1px solid var(--border-color, #ddd);
-  background: var(--bg-primary, white);
-  border-radius: 50%; /* 원형 버튼 */
-  cursor: pointer;
-  color: var(--color-accent-dark, #333);
-  transition: background 0.2s;
-}
-
-.monthButton:hover {
-  background: var(--bg-secondary, #f0f0f0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px; 
+    height: 36px;
+    border: none; 
+    /* 🚨 개선: 버튼 배경색을 var(--bg-card)로 설정 */
+    background: var(--bg-secondary);
+    border-radius: 50%;
+    cursor: pointer;
+    /* 🚨 개선: 버튼 내부 아이콘 색상을 var(--text-primary)로 설정하여 다크 모드 지원 */
+    color: var(--text-primary); 
+    
+    /* 🌟 버튼 그림자 추가 */
+    box-shadow: var(--shadow-sm, 0 2px 5px rgba(0, 0, 0, 0.1)); 
+    transition: all 0.2s;
 }
 
 .currentMonthLabel {
-  font-size: 1.25rem; /* 월/연도 강조 */
-  font-weight: 700;
-  color: var(--text-dark, #2c3e50);
+    font-size: 1.35rem; 
+    font-weight: 800; 
+    /* 🚨 개선: 텍스트 색상을 var(--text-primary)로 설정 */
+    color: var(--text-primary);
 }
 
-/* --- Feed List --- */
+/* ----------------------------- */
+/* --- Feed List & Empty Message --- */
+/* ----------------------------- */
 .feedList {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem; /* 피드 카드 간 간격 확대 */
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
 .emptyMessage {
-  text-align: center;
-  padding: 5rem 1rem;
-  color: var(--text-secondary, #999);
-  background: var(--bg-primary, white);
-  border-radius: 1rem;
-  box-shadow: var(--shadow-sm);
-  font-size: 1.1rem;
+    text-align: center;
+    padding: 5rem 1rem;
+    color: var(--text-secondary);
+    /* 🚨 개선: 배경색을 var(--bg-card)로 설정 */
+    background: var(--bg-card);
+    border-radius: 1rem;
+    box-shadow: var(--shadow-sm);
+    font-size: 1.1rem;
 }
