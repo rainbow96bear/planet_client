@@ -2,9 +2,12 @@
 // Todo 타입
 // -----------------------------
 export interface Todo {
-  EventID: number;     // FK to CalendarDayEvent.eventId
-  Content: string;     // 할 일 내용
-  Done: boolean;       // 완료 여부
+  id: string; 
+  EventID: string; // FK to CalendarDayEvent.eventId (UUID)
+  UserID: string;  // Todo 소유자 ID (UUID)
+  content: string; // 할 일 내용 (Go: Content)
+  isDone: boolean; 
+  dueTime?: string;
 }
 
 // -----------------------------
@@ -34,7 +37,7 @@ export interface CalendarDayEvent extends CalendarEvent {
 // CalendarData: 달력 전체 데이터
 // -----------------------------
 export interface CalendarData {
-  events: CalendarEvent[];
+  events: CalendarDayEvent[];
   completionData: Record<number, number>; // day: completion % (0-100)
   monthData: (number | null)[][];         // 달력 그리드 데이터
   year: number;

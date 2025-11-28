@@ -57,12 +57,37 @@
 }
 
 /* 전역 배경 */
-*{
-  box-sizing: border-box;
-}
 body {
-  margin: 0;
-  background: linear-gradient(to bottom, var(--bg-gradient-start), var(--bg-gradient-end));
-  color: var(--text-primary);
-  transition: background 0.3s ease, color 0.3s ease;
+    margin: 0;
+    /* 테마 그라디언트 적용 */
+    background: linear-gradient(to bottom, var(--bg-gradient-start), var(--bg-gradient-end));
+    /* 테마 기본 텍스트 색상 적용 */
+    color: var(--text-primary);
+    transition: background 0.3s ease, color 0.3s ease;
+
+    /* 폰트 설정 (서비스에 맞게 수정) */
+    font-family: 'Pretendard', 'Nanum Gothic', sans-serif; 
+    line-height: 1.5; 
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale; 
+    min-height: 100vh; /* 전체 페이지 높이 보장 */
+}
+
+/* 링크 스타일 */
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: var(--color-secondary);
+    text-decoration: underline;
+}
+
+/* 접근성 및 포커스 스타일 */
+:focus-visible { /* 키보드 사용 시에만 포커스 아웃라인 표시 */
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 4px; /* 포커스 아웃라인이 둥글게 보이도록 */
 }

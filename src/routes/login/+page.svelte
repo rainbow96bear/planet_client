@@ -23,10 +23,6 @@
 </script>
 
 <div class={styles.container}>
-  <div class={styles.bgPlanet + ' ' + styles.planet1}></div>
-  <div class={styles.bgPlanet + ' ' + styles.planet2}></div>
-  <div class={styles.bgPlanet + ' ' + styles.planet3}></div>
-  
   <div class={styles.contentWrapper}>
     <div class={styles.logoSection}>
       <div class={styles.logoCircle}>

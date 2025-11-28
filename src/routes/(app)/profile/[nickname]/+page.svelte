@@ -16,7 +16,7 @@
   } from './page';
   import type { UserProfile } from '$lib/types/profile';
   import { auth } from '$lib/stores';
-	import type { CalendarEvent } from '$lib/types/calendar';
+	import type { CalendarDayEvent, CalendarEvent } from '$lib/types/calendar';
   import { ArrowLeft, ArrowRight } from 'lucide-svelte'; // 아이콘 라이브러리 가정
 
   $: nickname = $page.params.nickname ?? '';
@@ -30,7 +30,7 @@
   let isFollowing: boolean | null = null;
 
   let calendarData: {
-    events: CalendarEvent[];
+    events: CalendarDayEvent[];
     monthData: (number | null)[][];
     completionData: Record<number, number>;
     year: number;
@@ -64,7 +64,6 @@
     isFollowing = isMyProfile ? null : (await fetchIsFollowing(nickname));
     // 프로필 불러오기
     profile = await loadProfile(nickname, isMyProfile);
-console.log(profile)
     // 캘린더 초기화
     isLoadingCalendar = true;
     // 초기 로드 시점의 currentYear/Month 사용

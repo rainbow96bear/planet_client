@@ -6,7 +6,7 @@
   // Calendar 관련 유틸리티 함수는 그대로 사용
   import { getCurrentYearMonth, generateMonthData, precomputeEventsByDate, mapMonthDataWithEvents, getCompletionStyle } from './Calendar';
 
-  export let events: CalendarEvent[] = [];
+  export let events: CalendarDayEvent[] = [];
   export let completionData: Record<number, number> = {};
   export let monthData: MonthData = [];
   export let year: number | undefined;
@@ -120,7 +120,7 @@
         <h3>{selectedDay}일의 일정</h3>
         <div class={styles.popupEvents}>
           {#each selectedDayEvents as event (event.eventId)}
-            <PlanCard {event} todos={event.todos} isOwner={true}
+            <PlanCard {event} isOwner={true}
                       on:edit={onCardEdit} on:delete={onCardDelete}/>
           {/each}
         </div>
