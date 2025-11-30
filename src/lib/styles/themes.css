@@ -4,6 +4,18 @@
   --color-secondary: #8B9DC3;
   --color-accent: #B8A4C9;
 
+  /* RGB 값 (알파 채널 사용을 위해) */
+  --color-primary-rgb: 125, 189, 182;
+  --color-secondary-rgb: 139, 157, 195;
+
+  /* 공개 범위 버튼 전용 색상 */
+  --visibility-selected-bg: rgba(125, 189, 182, 0.12);
+  --visibility-selected-text: #7DBDB6;
+  --visibility-selected-border: #7DBDB6;
+  --visibility-selected-shadow: 0 2px 8px -2px rgba(125, 189, 182, 0.3);
+  --visibility-hover-bg: rgba(125, 189, 182, 0.08);
+  --visibility-hover-border: rgba(125, 189, 182, 0.25);
+
   --bg-primary: #FFFFFF;
   --bg-secondary: #F9FAFB;
   --bg-gradient-start: #E8F3F1;
@@ -21,7 +33,13 @@
   --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.08);
   --shadow-xl: 0 20px 60px rgba(125, 189, 182, 0.3);
 
-  /* ✅ 헤더 전용 색상 (밝은 테마용) */
+  --color-success: #10B981;
+  --color-danger: #EF4444;
+  --color-button-text: var(--text-primary);
+
+  --color-sunday: #EF4444; 
+  --color-saturday: var(--color-secondary);
+
   --header-bg: rgba(255, 255, 255, 0.8);
   --header-border: rgba(125, 189, 182, 0.25);
   --header-blur: 10px;
@@ -32,6 +50,17 @@
   --color-primary: #7DBDB6;
   --color-secondary: #8B9DC3;
   --color-accent: #B8A4C9;
+
+  /* RGB 값 (알파 채널 사용을 위해) */
+  --color-primary-rgb: 125, 189, 182;
+  --color-secondary-rgb: 139, 157, 195;
+
+  /* 공개 범위 버튼 전용 색상 (다크 모드) */
+  --visibility-selected-bg: linear-gradient(135deg, #7DBDB6 0%, #8B9DC3 100%);
+  --visibility-selected-shadow: 0 4px 16px -4px rgba(125, 189, 182, 0.6);
+  --visibility-selected-border: rgba(125, 189, 182, 0.5);
+  --visibility-hover-bg: rgba(125, 189, 182, 0.15);
+  --visibility-hover-border: rgba(125, 189, 182, 0.4);
 
   --bg-primary: #1F2937;
   --bg-secondary: #111827;
@@ -50,7 +79,13 @@
   --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.5);
   --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.6);
 
-  /* ✅ 헤더 전용 색상 (어두운 테마용) */
+  --color-success: #34D399;
+  --color-danger: #F87171;
+  --color-button-text: var(--bg-primary);
+
+  --color-sunday: #F87171; 
+  --color-saturday: var(--color-secondary);
+
   --header-bg: rgba(31, 41, 55, 0.75);
   --header-border: rgba(125, 189, 182, 0.2);
   --header-blur: 12px;
@@ -59,18 +94,14 @@
 /* 전역 배경 */
 body {
     margin: 0;
-    /* 테마 그라디언트 적용 */
     background: linear-gradient(to bottom, var(--bg-gradient-start), var(--bg-gradient-end));
-    /* 테마 기본 텍스트 색상 적용 */
     color: var(--text-primary);
     transition: background 0.3s ease, color 0.3s ease;
-
-    /* 폰트 설정 (서비스에 맞게 수정) */
     font-family: 'Pretendard', 'Nanum Gothic', sans-serif; 
     line-height: 1.5; 
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale; 
-    min-height: 100vh; /* 전체 페이지 높이 보장 */
+    min-height: 100vh;
 }
 
 /* 링크 스타일 */
@@ -86,8 +117,8 @@ a:hover {
 }
 
 /* 접근성 및 포커스 스타일 */
-:focus-visible { /* 키보드 사용 시에만 포커스 아웃라인 표시 */
+:focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 3px;
-    border-radius: 4px; /* 포커스 아웃라인이 둥글게 보이도록 */
+    border-radius: 4px;
 }

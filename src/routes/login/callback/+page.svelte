@@ -13,7 +13,6 @@
       try {
         // 로그인 전 페이지로 이동
         const redirect = localStorage.getItem('redirectAfterLogin') || '/';
-        console.log(redirect)
         localStorage.removeItem('redirectAfterLogin');
         goto(redirect);
       } catch (err) {

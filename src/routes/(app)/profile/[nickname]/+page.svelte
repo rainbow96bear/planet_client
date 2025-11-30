@@ -208,6 +208,7 @@
           completionData={calendarData.completionData ?? {}}
           year={calendarData.year}
           month={calendarData.month}
+          {nickname}
           on:addEvent={handleAddEvent}
           on:editEvent={handleEditEvent}
           on:deleteEvent={handleDeleteEvent}

@@ -1,151 +1,243 @@
+/* -------------------- 팝업 컨테이너 (Daily Plan Viewer) 스타일 -------------------- */
+.dailyPlanViewer {
+    /* 팝업 컨테이너 자체 스타일 (가정) */
+    max-height: 80vh; /* 뷰포트 크기에 맞춰 최대 높이 지정 */
+    /* 💡 [개선] Flexbox 레이아웃 명시 */
+    display: flex; 
+    flex-direction: column;
+    /* 💡 [개선] 배경색을 CSS 변수로 통일 (PlanCard의 var(--bg-primary)와 구분) */
+    border-radius: 1rem;
+}
+
+.dailyPlanViewer h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    flex-shrink: 0; /* 제목은 스크롤되지 않도록 고정 */
+}
+
+/* 팝업 내부 이벤트 목록 컨테이너 */
+.popupEvents {
+    display: flex;
+    flex-direction: column;
+    
+    /* 2. 일정 카드 사이에 여백 추가 */
+    gap: 1.25rem; 
+    
+    overflow-y: auto; /* 내용이 넘치면 스크롤 가능 */
+    flex-grow: 1; /* 남은 공간을 모두 차지하여 스크롤 영역 확보 */
+
+    /* 1. 스크롤바 숨기기 (Webkit - Chrome, Safari, Edge) */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox에서 숨김 */
+}
+
+/* 1. 스크롤바 숨기기 (Webkit) - 스크롤은 가능하지만 보이지 않게 처리 */
+.popupEvents::-webkit-scrollbar {
+    display: none; 
+}
+
+
+/* 로딩 및 오류 메시지 */
+.loading, .error, .noEvents {
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+.error {
+    color: var(--color-danger);
+}
+
+
 /* -------------------- Card Base Styles -------------------- */
 .planCard {
-  background: var(--bg-primary);
-  border-radius: 0.75rem;
-  padding: 1rem;
-  box-shadow: var(--shadow-md); /* 그림자를 조금 더 강조 */
-  border: 1px solid var(--border-light); /* 연한 테두리 사용 */
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  transition: all 0.2s;
+    background: var(--bg-primary);
+    border-radius: 0.75rem;
+    padding: 1.2rem;
+    border: 1px solid var(--border-light); 
+    display: flex;
+    flex-direction: column; 
+    gap: 0.8rem;
+    transition: all 0.2s;
 }
 
-.planCard:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+.planContent { 
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    gap: 0.8rem;
 }
 
-.planContent { /* ⬅️ Kebab-Case -> CamelCase */
-  display: flex;
-  gap: 0.75rem;
-  flex: 1;
-  min-width: 0;
+/* 상단 헤더 (이모지, 제목, 날짜) 그룹화 */
+.planHeader {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
 }
 
-.planEmoji { /* ⬅️ Kebab-Case -> CamelCase */
-  font-size: 1.5rem;
-  flex-shrink: 0;
-  padding-top: 0.1rem; /* 이모지 위치 조정 */
+.planEmoji { 
+    font-size: 1.8rem; 
+    flex-shrink: 0;
 }
 
-.planInfo { /* ⬅️ Kebab-Case -> CamelCase */
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem; /* 간격 넓힘 */
+.planInfo { 
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
 }
 
-.planTitle { /* ⬅️ Kebab-Case -> CamelCase */
-  font-size: 1rem; /* 폰트 크기 키움 */
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1.4;
-  margin-bottom: 0.1rem;
+.planTitle { 
+    font-size: 1.15rem; 
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.4;
+    word-break: break-word; 
 }
 
-.planDescription { /* ⬅️ Kebab-Case -> CamelCase */
-  font-size: 0.85rem; /* 폰트 크기 조정 */
-  color: var(--text-secondary);
-  line-height: 1.4;
-  margin-top: 0;
+.planDescription { 
+    font-size: 0.9rem; 
+    color: var(--text-secondary);
+    line-height: 1.5;
+    padding-bottom: 0.5rem; 
+    /* 💡 [개선] 색상 변수 사용 */
+    border-bottom: 1px dashed var(--border-light); 
 }
 
-.planDate { /* ⬅️ Kebab-Case -> CamelCase */
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--color-primary);
-  margin-top: 0.3rem;
-  opacity: 0.8;
+.planDate { 
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--color-primary); 
+    opacity: 0.9;
 }
 
-.planVisibility { /* ⬅️ Kebab-Case -> CamelCase */
-  font-size: 1rem;
-  flex-shrink: 0;
-  cursor: help;
-  padding-top: 0.1rem;
+/* 하단 푸터 (공개 범위, 버튼 그룹) */
+.planFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; /* 버튼 그룹과 가시성 아이콘을 중앙에 정렬 */
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-light);
+}
+
+.planVisibility { 
+    font-size: 1rem;
+    flex-shrink: 0;
+    color: var(--text-tertiary); 
 }
 
 /* -------------------- Todo List Styles -------------------- */
-.todoList { /* ⬅️ Kebab-Case -> CamelCase */
-    border-top: 1px solid var(--border-light);
-    padding-top: 0.8rem;
-    margin-top: 0.8rem;
+.todoList { 
+    padding-top: 0.5rem; 
+    margin-top: 0.2rem;
     display: flex;
     flex-direction: column;
-    gap: 0.6rem;
+    gap: 0.5rem;
 }
 
-.todoListTitle { /* ⬅️ 신규 추가 */
-    font-size: 0.8rem;
+.todoListTitle { 
+    font-size: 0.85rem;
     font-weight: 600;
     color: var(--text-secondary);
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.2rem;
 }
 
-.todoItem { /* ⬅️ Kebab-Case -> CamelCase */
+.todoItem { 
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.7rem;
     font-size: 0.9rem;
     color: var(--text-primary);
 }
 
-.todoCheckbox { /* ⬅️ 신규 추가: 체크박스 스타일링 */
-    width: 1rem;
-    height: 1rem;
-    accent-color: var(--color-primary); /* 체크된 상태 색상 */
-    cursor: pointer;
+.todoCheckbox { 
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--color-success); 
     flex-shrink: 0;
 }
 
-.todoDone { /* ⬅️ Kebab-Case -> CamelCase (done 클래스) */
+/* isOwner가 아닐 때 Todo 완료 상태 표시 아이콘 */
+.todoStatusIcon {
+    font-size: 0.9rem;
+    font-weight: 700;
+    width: 1.1rem;
+    text-align: center;
+    /* 💡 [개선] 미완료는 텍스트 색상, 완료는 성공 색상 사용 */
+    color: var(--text-tertiary); 
+    flex-shrink: 0;
+}
+.todoStatusIcon.done {
+    color: var(--color-success); 
+}
+
+.todoDone { 
     text-decoration: line-through;
     color: var(--text-tertiary);
 }
 
 /* -------------------- Action Button Group -------------------- */
-.buttonGroup { /* ⬅️ Kebab-Case -> CamelCase */
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 1rem;
-  padding-top: 0.2rem;
+.buttonGroup { 
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
 }
 
-.editButton, .deleteButton { /* ⬅️ Kebab-Case -> CamelCase (일반 .button 대신 구체화) */
-  padding: 0.35rem 0.8rem;
-  border-radius: 0.5rem; /* 더 둥글게 */
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  font-weight: 600;
-  border: none;
-  box-shadow: var(--shadow-sm);
+.editButton, .deleteButton { 
+    padding: 0.4rem 0.9rem;
+    border-radius: 0.5rem; 
+    font-size: 0.8rem;
+    transition: all 0.2s;
+    font-weight: 600;
+    border: none;
+    box-shadow: var(--shadow-sm);
 }
 
-/* 수정 버튼 (Primary Look) */
+/* 수정 버튼 (Primary Look - 서비스 강조색) */
 .editButton { 
-  background: var(--color-primary);
-  color: var(--bg-primary); /* 흰색 텍스트 */
+    background: var(--color-primary);
+    color: white; 
+}
+.editButton:active {
+    background: var(--color-secondary); 
+    transform: scale(0.98); 
+    box-shadow: none;
 }
 
-.editButton:hover {
-  background: #6AA59E; /* 진한 색상 */
-  transform: translateY(-1px);
-}
-
-/* 삭제 버튼 (Secondary Look) */
+/* 삭제 버튼 (Danger Look - 경고색) */
 .deleteButton {
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-light);
+    background: var(--color-danger);
+    color: white;
+}
+.deleteButton:active {
+    background: #C43D3D; 
+    transform: scale(0.98);
+    box-shadow: none;
 }
 
-.deleteButton:hover {
-  background: #ff5050; /* 경고색으로 변경 */
-  color: white;
-  border-color: #ff5050;
-  transform: translateY(-1px);
+/* 팝업 닫기 버튼 */
+.closeBtn {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.6rem 1rem;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-light);
+    border-radius: 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    flex-shrink: 0; /* 💡 [개선] 닫기 버튼은 스크롤되지 않도록 고정 */
+}
+
+.closeBtn:hover {
+    background: var(--bg-hover);
+}
+
+.closeBtn:active {
+    transform: scale(0.99);
 }

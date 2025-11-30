@@ -36,7 +36,6 @@ export async function submitCalendar(event: CustomEvent<FormData>) {
     goto('/login');
     return;
   }
-  console.log(JSON.stringify(event.detail))
   const res = await fetch('/api/me/calendar/events', {
     method: 'POST',
     headers: {

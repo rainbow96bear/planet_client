@@ -27,7 +27,6 @@ export function initLayout(
 
         const profileData = profileRes.ok ? await profileRes.json() : null;
         const themeData = themeRes.ok ? await themeRes.json() : { theme: 'light' };
-        console.log(profileData)
         userProfile.set(profileData);
         theme.setTheme(themeData.theme);
 

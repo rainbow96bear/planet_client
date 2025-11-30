@@ -1,0 +1,499 @@
+/* CalendarForm.module.css */
+
+/* --- Root Variables for Theme Consistency --- */
+
+/* 헤더 고정을 위한 배경/경계 변수 사용 */
+.calendarFormContainer {
+    margin: 0 auto;
+    width: 100%; /* 너비 100% 유지 */
+    min-height: 100vh;
+    background: var(--bg-primary); /* 폼 배경색 */
+    overflow-x: hidden; /* 가로 스크롤 방지 */
+}
+
+/* --- Header Styles --- */
+.formHeader {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.2rem;
+    background: var(--header-bg); 
+    backdrop-filter: blur(var(--header-blur));
+    border-bottom: 1px solid var(--header-border);
+    z-index: 10;
+}
+
+.backBtn {
+    background: none;
+    border: none;
+    padding: 8px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.backBtn:active {
+    color: var(--color-primary);
+}
+
+.formTitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+    flex: 1;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.headerActions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+/* 삭제 버튼 */
+.deleteBtn {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: rgba(var(--color-danger), 0.1); 
+    color: var(--color-danger);
+    border-radius: 0.75rem; 
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.deleteBtn:active {
+    background: var(--color-danger);
+    color: var(--bg-primary);
+}
+
+/* 완료 버튼 */
+.saveBtn {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: var(--color-primary); 
+    color: white; 
+    border-radius: 0.75rem; 
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.saveBtn:active {
+    background: var(--color-secondary);
+}
+
+/* --- Form Content & Section Styles --- */
+.formContent {
+    padding: 1.5rem;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.section {
+    margin-bottom: 1.5rem;
+    position: relative;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.sectionLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+}
+
+/* 섹션 아이콘 색상 */
+.sectionLabel svg {
+    color: var(--color-primary);
+}
+
+/* 할 일 목록 글자 수 제한 안내 스타일 추가 */
+.sectionNote {
+    margin: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.sectionNote .noteText {
+    color: var(--color-primary); /* 강조할 텍스트 색상 (예: 경고색) */
+}
+
+
+/* --- Emoji & Title --- */
+.emojiTitleGroup {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.emojiBtn {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-light);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+.emojiBtn:active {
+    background: var(--bg-primary);
+    border-color: var(--color-primary);
+}
+.emojiDisplay {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.titleInput {
+    flex: 1;
+    border: 2px solid var(--border-light);
+    border-radius: 0.75rem;
+    padding: 0.8rem 1rem;
+    font-size: 1rem;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: border-color 0.2s, box-shadow 0.2s;
+    min-width: 0; 
+}
+.titleInput:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(var(--color-primary), 0.2); 
+}
+
+.emojiPicker {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-light);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    box-shadow: var(--shadow-md);
+    z-index: 20;
+}
+
+.emojiGrid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 0.25rem;
+    max-width: 100%;
+}
+
+.emojiItem {
+    background: none;
+    border: 2px solid transparent;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.emojiItem:active {
+    background: var(--bg-secondary);
+}
+
+.emojiItem.selected {
+    border-color: var(--color-primary);
+    background: rgba(var(--color-primary), 0.1); 
+}
+
+/* --- Date Input --- */
+.dateGroup {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.dateInputWrapper {
+    flex: 1;
+    min-width: 0; 
+    overflow: hidden;
+}
+
+.dateLabel {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    margin-bottom: 0.4rem;
+}
+.dateInput {
+    width: 100%;
+    box-sizing: border-box; 
+    overflow: hidden; 
+    border: 2px solid var(--border-light);
+    border-radius: 0.75rem;
+    padding: 0.8rem 1rem;
+    font-size: 0.95rem;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: border-color 0.2s;
+    min-width: 0;
+}
+
+.dateInput:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.dateDivider {
+    color: var(--text-secondary);
+    font-size: 1.2rem;
+    margin-top: 1.2rem;
+    flex-shrink: 0;
+}
+
+/* --- Todo List --- */
+.todosContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.todoInputGroup {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--bg-secondary);
+    padding: 0.6rem 0.8rem;
+    border-radius: 0.75rem;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.todoInputGroup:focus-within {
+    background: var(--bg-primary);
+    border-color: var(--color-primary);
+}
+
+.todoNumber {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-tertiary);
+    min-width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.todoInput {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 4px 0;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    min-width: 0;
+}
+.todoInput:focus {
+    outline: none;
+}
+
+.todoRemoveBtn {
+    background: none;
+    border: none;
+    padding: 4px;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.todoRemoveBtn:active:not(:disabled) {
+    color: var(--color-danger);
+}
+
+.todoRemoveBtn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.addTodoBtn {
+    background: none;
+    border: 2px dashed var(--border-light);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+.addTodoBtn:active {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--bg-secondary);
+}
+
+/* --- Description --- */
+.descriptionInput {
+    width: 100%;
+    border: 2px solid var(--border-light);
+    border-radius: 0.75rem;
+    padding: 0.8rem 1rem;
+    font-size: 0.95rem;
+    font-family: inherit;
+    resize: vertical;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: border-color 0.2s;
+    line-height: 1.5;
+    max-width: 100%; 
+    box-sizing: border-box;
+}
+.descriptionInput:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.charCount {
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    margin-top: 0.4rem;
+}
+
+/* --- Visibility Options (공개 범위) --- */
+.visibilityOptions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+}
+
+/* ✅ 일반 상태 버튼 */
+.visibilityBtn {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-light);
+    border-radius: 0.75rem;
+    padding: 0.75rem 0.5rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    color: var(--text-secondary);
+    position: relative;
+    overflow: visible;
+}
+
+/* ✅ 호버 효과 (선택되지 않은 버튼) */
+.visibilityBtn:not(.active):hover {
+    background: rgba(125, 189, 182, 0.08);
+    border-color: rgba(125, 189, 182, 0.25);
+    color: #7DBDB6;
+}
+
+/* ✅ 클릭 순간 피드백 (선택되지 않은 버튼) */
+.visibilityBtn:not(.active):active {
+    transform: scale(0.98);
+}
+
+/* ✅ 선택된 상태 - CSS 모듈용 */
+.visibilityBtn.active,
+.active {
+    background: rgba(125, 189, 182, 0.15) !important;
+    border-color: #7DBDB6 !important;
+    color: #7DBDB6 !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 8px -2px rgba(125, 189, 182, 0.3) !important;
+}
+
+/* 다크모드에서 선택된 상태 */
+:root[data-theme="dark"] .visibilityBtn.active,
+:root[data-theme="dark"] .active {
+    background: rgba(125, 189, 182, 0.25) !important;
+    border-color: #7DBDB6 !important;
+    color: #7DBDB6 !important;
+}
+
+/* ✅ 선택된 버튼 클릭 순간 피드백 */
+.visibilityBtn.active:active,
+.active:active {
+    transform: scale(0.98);
+}
+
+/* ✅ 이모지 아이콘 */
+.visibilityIcon {
+    font-size: 1.5rem;
+    transition: transform 0.2s ease;
+}
+
+.visibilityBtn:hover .visibilityIcon {
+    transform: scale(1.05);
+}
+
+.visibilityBtn.active .visibilityIcon,
+.active .visibilityIcon {
+    transform: scale(1.1);
+}
+
+/* ✅ 텍스트 */
+.visibilityText {
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: font-weight 0.2s ease;
+}
+
+.visibilityBtn.active .visibilityText,
+.active .visibilityText {
+    font-weight: 600;
+}
+
+/* --- Responsive (Mobile) --- */
+@media (max-width: 640px) {
+    .formContent {
+        padding: 1rem;
+    }
+
+    .emojiGrid {
+        grid-template-columns: repeat(6, 1fr);
+    }
+
+    .dateGroup {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dateDivider {
+        text-align: center;
+        margin: 0.25rem 0;
+        font-size: 1rem;
+    }
+    
+    .visibilityBtn {
+        padding: 0.6rem 0.4rem;
+    }
+    
+    .visibilityIcon {
+        font-size: 1.3rem;
+    }
+    
+    .visibilityText {
+        font-size: 0.75rem;
+    }
+}

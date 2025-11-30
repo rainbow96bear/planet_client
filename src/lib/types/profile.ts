@@ -13,7 +13,7 @@ export interface Feed {
   id: number;
   title: string;
   date: string;
-  todos: { text: string; completed: boolean }[];
+  todos: { content: string; completed: boolean }[];
   likes: number;
   comments: number;
   emoji?: string;

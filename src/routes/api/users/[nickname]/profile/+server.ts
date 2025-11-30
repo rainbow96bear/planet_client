@@ -12,6 +12,5 @@ export const GET: RequestHandler = async ({ params }) => {
     return new Response(JSON.stringify({ error: 'profile not found' }), { status: res.status });
 
   const data: UserProfile = await res.json();
-   console.log("profile res : ",JSON.stringify(data))
   return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
 };

@@ -24,7 +24,6 @@ function createThemeStore() {
   return {
     subscribe,
     setTheme: (theme: Theme) => {
-      console.log(theme)
       if (browser) {
         localStorage.setItem('theme', theme);
         document.documentElement.setAttribute('data-theme', theme);

@@ -64,7 +64,6 @@ export const PATCH: RequestHandler = async ({ request }) => {
 
         // 5. 성공 응답 처리
         const data = await res.json();
-        console.log("Profile update successful:", JSON.stringify(data));
         
         // 성공 시 데이터와 함께 200 OK를 반환합니다.
         return json(data, { status: res.status });

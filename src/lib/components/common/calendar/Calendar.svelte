@@ -1,131 +1,167 @@
 <script lang="ts">
-  import PlanCard from '$lib/components/common/plan/PlanCard.svelte';
-  import type { CalendarEvent, CalendarDayEvent, MonthData, MonthDataWithEventsMatrix } from '$lib/types/calendar';
-  import { createEventDispatcher } from 'svelte';
-  import styles from './Calendar.module.css';
-  // Calendar 관련 유틸리티 함수는 그대로 사용
-  import { getCurrentYearMonth, generateMonthData, precomputeEventsByDate, mapMonthDataWithEvents, getCompletionStyle } from './Calendar';
+ import PlanCard from '$lib/components/common/plan/PlanCard.svelte';
+ import type { CalendarEvent, MonthData, MonthDataWithEventsMatrix } from '$lib/types/calendar';
+ import { createEventDispatcher } from 'svelte';
+ import styles from './Calendar.module.css';
+ import { getCurrentYearMonth, generateMonthData, precomputeEventsByDate, mapMonthDataWithEvents, getCompletionStyle } from './Calendar';
+ import { authFetch } from '$lib/utils/authFetch'; // 💡 [추가] API 호출을 위해 임포트
 
-  export let events: CalendarDayEvent[] = [];
-  export let completionData: Record<number, number> = {};
-  export let monthData: MonthData = [];
-  export let year: number | undefined;
-  export let month: number | undefined;
+ export let events: CalendarEvent[] = []; 
+ export let completionData: Record<number, number> = {};
+ export let monthData: MonthData = [];
+ export let year: number | undefined;
+ export let month: number | undefined;
+ export let nickname: string; // 💡 팝업 컴포넌트에 전달하기 위해 nickname props 추가
+ const dispatch = createEventDispatcher();
+ $: ({ year: currentYear, month: currentMonth } = getCurrentYearMonth(year, month));
+ $: effectiveMonthData = monthData.length > 0 ? monthData : generateMonthData(currentYear, currentMonth);
+ 
+ // 💡 CalendarDayEvent[] 대신 CalendarEvent[]를 사용하여 eventsByDateMap 생성
+ $: eventsByDateMap = precomputeEventsByDate(events, currentYear, currentMonth);
 
-  const dispatch = createEventDispatcher();
+ let monthDataWithEvents: MonthDataWithEventsMatrix;
+ $: monthDataWithEvents = mapMonthDataWithEvents(
+  effectiveMonthData,
+  events,
+  completionData,
+  currentYear,
+  currentMonth,
+  eventsByDateMap
+ );
 
-  $: ({ year: currentYear, month: currentMonth } = getCurrentYearMonth(year, month));
-  // monthData prop이 제공되지 않으면 생성 함수 사용
-  $: effectiveMonthData = monthData.length > 0 ? monthData : generateMonthData(currentYear, currentMonth);
-  // 성능 최적화를 위해 이벤트 맵 사전 계산
-  $: eventsByDateMap = precomputeEventsByDate(events, currentYear, currentMonth);
+ // 💡 selectedDayEvents 제거
+ let selectedDay: number | null = null;
+ let showDayPopup = false;
 
-  let monthDataWithEvents: MonthDataWithEventsMatrix;
-  // 월 데이터와 이벤트 데이터를 결합하여 캘린더 매트릭스 생성
-  $: monthDataWithEvents = mapMonthDataWithEvents(
-    effectiveMonthData,
-    events,
-    completionData,
-    currentYear,
-    currentMonth,
-    eventsByDateMap
-  );
+ // 💡 API 호출 로직 제거, 날짜 정보만 저장하고 팝업을 띄웁니다.
+ function handleDayClick(day: number | null) {
+  if (!day) return;
 
-  let selectedDayEvents: CalendarDayEvent[] = [];
-  let selectedDay: number | null = null;
-  let showDayPopup = false;
+  selectedDay = day;
+  showDayPopup = true;
+ }
+ 
+ function wrappedHandleDayClick(dayObj: (typeof monthDataWithEvents)[0][0] & { day: number } | null) {
+  if (dayObj) {
+   handleDayClick(dayObj.day); 
+  }
+ }
 
-  async function handleDayClick(day: number | null, dayEvents: CalendarDayEvent[]) {
-    if (!day) return;
-
-    selectedDay = day;
-    // 이전에 precomputeEventsByDate에서 CalendarEvent[]를 가져왔지만,
-    // mapMonthDataWithEvents 결과물에서 dayEvents를 직접 사용하면 로직이 간결해집니다.
-    // 현재 mapMonthDataWithEvents 결과인 dayEvents에는 todos가 없으므로,
-    // 기존 로직을 유지하면서 CalendarDayEvent 타입에 맞게 매핑했습니다.
-    selectedDayEvents = dayEvents.map(ev => ({ ...ev, todos: [] }));
+ // 💡 PlanCard에서 전파된 이벤트 처리 (수정, 삭제, Todo 업데이트)
+ function onCardEdit(e: CustomEvent<CalendarEvent>) { 
+  // PlanCard에서 이미 페이지 이동을 처리했으므로, 팝업만 닫습니다.
+  showDayPopup = false;
+ }
+ 
+ async function onCardDelete(e: CustomEvent<CalendarEvent>) { 
+    const event = e.detail;
     
-    // 이전에 eventsByDateMap에서 가져온 로직을 아래와 같이 수정했습니다.
-    // const eventsOfDay = eventsByDateMap[day] ?? [];
-    // selectedDayEvents = eventsOfDay.map(ev => ({ ...ev, todos: [] }));
-
-    showDayPopup = selectedDayEvents.length > 0;
-
-    dispatch('daySelected', { day, events: selectedDayEvents });
-  }
-  
-  // on:click 핸들러에 전달되는 dayObj의 dayEvents를 인자로 추가
-  function wrappedHandleDayClick(dayObj: (typeof monthDataWithEvents)[0][0] & { day: number } | null) {
-    if (dayObj) {
-      handleDayClick(dayObj.day, dayObj.dayEvents as CalendarDayEvent[]);
+    if (!confirm(`[${event.title}] 일정을 정말 삭제하시겠습니까?\n삭제된 일정은 복구할 수 없습니다.`)) {
+        return;
     }
-  }
 
+    try {
+        // 💡 API 호출: 일정 삭제
+        const res = await authFetch(`/api/me/calendar/events/${event.eventId}`, { 
+            method: 'DELETE'
+        });
 
-  function onCardEdit(e: CustomEvent<CalendarEvent>) { dispatch('editEvent', e.detail); }
-  function onCardDelete(e: CustomEvent<CalendarEvent>) { dispatch('requestDeleteEvent', e.detail); }
+        if (res.ok) {
+            // ✅ [개선된 로직] 1. Svelte의 반응성을 이용해 로컬 events prop에서 삭제된 이벤트를 즉시 제거합니다.
+            // 이 변경은 eventsByDateMap과 monthDataWithEvents를 자동으로 다시 계산하게 만듭니다.
+            events = events.filter(ev => ev.eventId !== event.eventId); 
+            
+            // 💡 2. 팝업을 닫고 선택된 날짜를 초기화합니다.
+            showDayPopup = false;
+            selectedDay = null;
+
+            // 3. 캘린더 전체 갱신 요청 (다른 월 등 광범위한 데이터 재로드를 위한 안전 장치)
+            dispatch('refreshCalendar');
+        } else {
+            // API 오류 처리
+            const errorData = await res.json().catch(() => ({ error: '알 수 없는 오류' }));
+            throw new Error(`Failed to delete event: ${errorData.error || res.statusText}`);
+        }
+    } catch (error) {
+        console.error("Event deletion failed:", error);
+        alert("일정 삭제에 실패했습니다."); // 사용자에게 실패를 알림
+    }
+}
+
+ function onTodoUpdated() {
+  // Todo가 업데이트되면 상위 컴포넌트에 캘린더 전체 갱신을 요청합니다.
+  dispatch('refreshCalendar');
+  // Note: 팝업을 닫을지는 UX 정책에 따라 결정합니다. 여기서는 닫지 않습니다.
+ }
 </script>
 
 <div class={styles.calendarCard}>
   <div class={styles.weekdays}>
-    {#each ['일','월','화','수','목','금','토'] as dayName, idx}
-      <div class={`${styles.weekday} ${idx===0?styles.sunday:''} ${idx===6?styles.saturday:''}`}>{dayName}</div>
-    {/each}
-  </div>
+  {#each ['일','월','화','수','목','금','토'] as dayName, idx}
+   <div class={`${styles.weekday} ${idx===0?styles.sunday:''} ${idx===6?styles.saturday:''}`}>{dayName}</div>
+  {/each}
+ </div>
 
   <div class={styles.calendarGrid}>
-    {#each monthDataWithEvents as week}
-      <div class={styles.calendarRow}>
-        {#each week as dayObj}
-          <div class={styles.calendarCell}>
-            {#if dayObj}
-              <div
-                class={`${styles.dayCell} ${dayObj.dayEvents.length>0?styles.hasEvents:''}`}
-                style="background: {getCompletionStyle(dayObj.completion)}"
-                on:click={() => wrappedHandleDayClick(dayObj)}
-                on:keydown={(e) => { if(e.key === 'Enter' || e.key === ' ') wrappedHandleDayClick(dayObj); }}
-                role="button"
-                tabindex="0"
-              >
-                <span class={`${styles.dayNumber} ${dayObj.isSunday?styles.sunday:''} ${dayObj.isSaturday?styles.saturday:''}`}>
-                  {dayObj.day}
-                </span>
-                
-                {#if dayObj.dayEvents.length > 0}
-                  <div class={styles.dayEvents}>
-                    {#each dayObj.dayEvents.slice(0,2) as event (event.eventId)}
-                      <div class={styles.eventItem} title={event.title}>
-                        <span class={styles.eventEmoji}>{event.emoji}</span>
-                        <span class={styles.eventTitle}>{event.title}</span>
-                      </div>
-                    {/each}
-                    {#if dayObj.dayEvents.length > 2}
-                      <div class={styles.moreEvents}>+{dayObj.dayEvents.length-2}개</div>
-                    {/if}
-                  </div>
-                {/if}
-              </div>
-            {:else}
-              <div class={styles.emptyCell}></div>
-            {/if}
-          </div>
-        {/each}
-      </div>
-    {/each}
-  </div>
-
-  {#if showDayPopup}
-    <div class={styles.popupOverlay} on:click={() => { showDayPopup=false; selectedDay=null; }} role="button" tabindex="-1">
-      <div class={styles.popupContent} on:click|stopPropagation role="dialog" aria-modal="true">
-        <h3>{selectedDay}일의 일정</h3>
-        <div class={styles.popupEvents}>
-          {#each selectedDayEvents as event (event.eventId)}
-            <PlanCard {event} isOwner={true}
-                      on:edit={onCardEdit} on:delete={onCardDelete}/>
+  {#each monthDataWithEvents as week}
+   <div class={styles.calendarRow}>
+    {#each week as dayObj}
+     <div class={styles.calendarCell}>
+      {#if dayObj}
+       <div
+        class={`${styles.dayCell} ${dayObj.dayEvents.length>0?styles.hasEvents:''}`}
+        style={`background-color: ${getCompletionStyle(dayObj.completion)};`}
+        on:click={() => wrappedHandleDayClick(dayObj)}
+        on:keydown={(e) => { if(e.key === 'Enter' || e.key === ' ') wrappedHandleDayClick(dayObj); }}
+        role="button"
+        tabindex="0"
+       >
+        <span class={`${styles.dayNumber} ${dayObj.isSunday?styles.sunday:''} ${dayObj.isSaturday?styles.saturday:''}`}>
+         {dayObj.day}
+        </span>
+        
+        {#if dayObj.dayEvents.length > 0}
+         <div class={styles.dayEvents}>
+          {#each dayObj.dayEvents.slice(0,3) as event (event.eventId)}
+           <div class={styles.eventItem} title={event.title}>
+            <span class={styles.eventTitle}>{event.title}</span>
+           </div>
           {/each}
-        </div>
-        <button class={styles.closeBtn} on:click={() => { showDayPopup=false; selectedDay=null; }}>닫기</button>
-      </div>
-    </div>
-  {/if}
+          {#if dayObj.dayEvents.length > 3}
+           <div class={styles.moreEvents}>+{dayObj.dayEvents.length-3}개</div>
+          {/if}
+         </div>
+        {/if}
+       </div>
+      {:else}
+       <div class={styles.emptyCell}></div>
+      {/if}
+     </div>
+    {/each}
+   </div>
+  {/each}
+ </div>
+
+ {#if showDayPopup}
+  <div 
+   class={styles.popupOverlay} 
+   on:click={() => { showDayPopup=false; selectedDay=null; }} 
+   on:keydown={(e) => { if(e.key === 'Escape') { showDayPopup=false; selectedDay=null; }}}
+   role="button" 
+   tabindex="-1"
+  >
+   <div class={styles.popupContent} on:click|stopPropagation role="dialog" aria-modal="true">
+    <PlanCard 
+      year={currentYear} 
+      month={currentMonth} 
+      day={selectedDay}
+      {nickname}
+      on:edit={onCardEdit} 
+      on:delete={onCardDelete}
+      on:todoUpdated={onTodoUpdated} 
+      on:closePopup={() => { showDayPopup=false; selectedDay=null; }}
+    />
+   </div>
+  </div>
+ {/if}
 </div>

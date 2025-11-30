@@ -20,7 +20,6 @@ export const GET: RequestHandler = async ({ request }) => {
 
   // 백엔드 API 호출 시 쿼리 포함
   const apiUrl = `${USER_SERVER_API_URL}/me/calendar?year=${year}&month=${month}`;
-  console.log("apiUrl", apiUrl)
 
   const res = await fetch(apiUrl, {
     headers: { Authorization: authHeader },
@@ -31,7 +30,6 @@ export const GET: RequestHandler = async ({ request }) => {
   }
 
   const data = await res.json();
-  console.log("data", data)
 
   return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
 };
