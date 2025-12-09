@@ -10,13 +10,7 @@
   import { layoutState } from '$lib/stores/layoutState';
   import { derived } from 'svelte/store';
   import type { SuggestedUser, TrendingTag } from '$lib/types/layout';
-	import { initLayout } from './layout';
-	import { userProfile } from '$lib/stores/userProfile';
-
-  const currentPathStore = derived(page, $page => $page.url.pathname);
-  initLayout(currentPathStore, (partial) => {
-    layoutState.update(s => ({ ...s, ...partial }));
-  });
+	import { isLoggedIn } from '$lib/stores/auth';
 
   const suggestedUsers: SuggestedUser[] = [
     { name: '강하늘', handle: '@haneul_cook', avatar: '👨‍🍳', bio: '요리 블로거' },
@@ -44,7 +38,7 @@
 
   <main class={styles.layoutMain}>
     <aside class={styles.leftSidebar}>
-      {#if $userProfile}
+      {#if $isLoggedIn}
         <NavigationBar currentPath={$layoutState.currentPath}/>
       {/if}
     </aside>

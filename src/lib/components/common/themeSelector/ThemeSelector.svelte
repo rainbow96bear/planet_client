@@ -2,7 +2,7 @@
   import { createEventDispatcher } from 'svelte';
   import styles from './ThemeSelector.module.css';
 
-  export let currentTheme: 'light' | 'dark' = 'light';
+  export let currentTheme:string;
   const dispatch = createEventDispatcher();
 
   function selectTheme(newTheme: 'light' | 'dark') {

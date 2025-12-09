@@ -1,51 +1,43 @@
 // src/routes/api/user/theme/+server.ts
 import type { RequestHandler } from '@sveltejs/kit';
+import { UPDATE_PROFILE_THEME } from '$lib/graphql';
+import { graphqlWithAuth } from '$lib/server/graphqlWithAuth';
 
-const USER_SERVER_API_URL = process.env.VITE_USER_SERVER_API_URL;
+const USER_SERVER_GRAPHQL = process.env.VITE_USER_SERVER_GRAPHQL;
 
-// GET: 사용자 테마 조회
-export const GET: RequestHandler = async ({ request }) => {
+
+
+export const PATCH: RequestHandler = async (event) => {
   try {
-    const token = request.headers.get('authorization');
-    const res = await fetch(`${USER_SERVER_API_URL}/me/theme`, {
-      method: 'GET',
-      headers: token ? { 'Authorization': token } : {},
-    });
+    const authHeader = event.request.headers.get('authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: '인증 실패: 토큰 없음' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
 
-    const body = await res.text();
-    const headers = new Headers(res.headers);
+    const body = await event.request.json();
 
-    return new Response(body, { status: res.status, headers });
-  } catch (err) {
-    console.error('GET /api/user/theme error:', err);
-    return new Response(JSON.stringify({ error: '서버 내부 오류' }), {
-      status: 500,
+    const variables = {
+      input: {
+        theme: body.theme   // 🎯 유저가 변경할 테마
+      }
+    };
+
+    const data = await graphqlWithAuth(
+      USER_SERVER_GRAPHQL!,
+      UPDATE_PROFILE_THEME,
+      variables,
+      event
+    );
+
+    return new Response(JSON.stringify(data.updateProfile), {
+      status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
-  }
-};
-
-// PATCH: 사용자 테마 변경
-export const PATCH: RequestHandler = async ({ request }) => {
-  try {
-    const token = request.headers.get('authorization');
-    const data = await request.json();
-
-    const res = await fetch(`${USER_SERVER_API_URL}/me/theme`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': token } : {}),
-      },
-      body: JSON.stringify(data),
-    });
-
-    const body = await res.text();
-    const headers = new Headers(res.headers);
-
-    return new Response(body, { status: res.status, headers });
   } catch (err) {
-    console.error('POST /api/profile/theme error:', err);
+    console.error('PATCH /api/me/theme error:', err);
     return new Response(JSON.stringify({ error: '서버 내부 오류' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }

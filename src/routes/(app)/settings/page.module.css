@@ -1,16 +1,3 @@
-/* 파일 경로: src/routes/(app)/settings/settings.module.css (Theme 적용 완벽 개선 버전) */
-
-/* --- Page Layout --- */
-.pageWrapper {
-    margin: 0 auto;
-    min-height: 100vh;
-    /* 🚨 개선: 전역 변수 '--bg-primary' 사용 */
-    background: var(--bg-primary); 
-    color: var(--text-primary);
-    position: relative;
-}
-
-/* --- App Bar (Header) --- */
 .appBar {
     display: flex;
     align-items: center;
@@ -20,12 +7,9 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    
-    /* 🚨 개선: 헤더 전용 변수 '--header-bg', '--header-border', '--header-blur' 사용 */
-    background: var(--header-bg); 
-    backdrop-filter: blur(var(--header-blur)); 
-    border-bottom: 1px solid var(--header-border); 
-    
+    background: var(--header-bg);
+    backdrop-filter: blur(var(--header-blur));
+    border-bottom: 1px solid var(--header-border);
     transition: background 0.3s ease, border-bottom 0.3s ease;
 }
 
@@ -35,16 +19,14 @@
     padding: 8px;
     margin-left: -8px;
     cursor: pointer;
-    /* 🚨 개선: 전역 변수 사용 */
-    color: var(--text-primary); 
+    color: var(--text-primary);
     display: flex;
 }
 
 .pageTitle {
     font-size: 1rem;
     font-weight: 700;
-    /* 🚨 개선: 전역 변수 사용 */
-    color: var(--text-primary); 
+    color: var(--text-primary);
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
@@ -56,8 +38,8 @@
     text-align: right;
 }
 
-/* 텍스트형 버튼 (iOS 스타일) */
-.editLink, .doneButton {
+.editLink,
+.doneButton {
     background: none;
     border: none;
     font-size: 1rem;
@@ -68,26 +50,21 @@
 }
 
 .editLink {
-    /* 🚨 개선: 전역 변수 사용 */
-    color: var(--text-primary); 
+    color: var(--text-primary);
 }
 
 .doneButton {
-    /* 🚨 개선: 전역 변수 사용 */
-    color: var(--color-primary); 
+    color: var(--color-primary);
 }
 
 .doneButton:disabled {
-    /* 🚨 개선: 전역 변수 '--text-tertiary' 사용 */
     color: var(--text-tertiary);
 }
 
-/* --- Content Area --- */
 .content {
     padding: 1.5rem 1rem 4rem;
 }
 
-/* --- Hero Profile Section --- */
 .profileHero {
     display: flex;
     flex-direction: column;
@@ -95,27 +72,27 @@
     margin-bottom: 2.5rem;
 }
 
-/* 아바타 래퍼 */
 .avatarWrapper {
     position: relative;
     width: 96px;
     height: 96px;
     margin-bottom: 1.5rem;
+    border: none;
+    background: none;
+    padding: 0;
 }
+
 .avatarWrapper.editable {
     cursor: pointer;
 }
 
-/* 아바타 원형 이미지 */
 .avatar {
     width: 100%;
     height: 100%;
     border-radius: 50%;
     overflow: hidden;
-    /* 🚨 개선: 전역 변수 '--bg-secondary' 사용 */
-    background: var(--bg-secondary); 
-    /* 🚨 개선: 전역 변수 '--shadow-md' 사용 */
-    box-shadow: var(--shadow-md); 
+    background: var(--bg-secondary);
+    box-shadow: var(--shadow-md);
 }
 
 .avatar img {
@@ -133,30 +110,26 @@
     font-size: 2.5rem;
 }
 
-/* 🌟 카메라 뱃지 (편집 모드) */
 .editBadge {
     position: absolute;
     bottom: 0;
     right: 0;
     width: 32px;
     height: 32px;
-    /* 🚨 개선: 전역 변수 '--color-primary' 사용 */
-    background: var(--color-primary); 
-    /* 🚨 개선: 전역 변수 '--bg-primary' 사용 */
-    border: 3px solid var(--bg-primary); 
+    background: var(--color-primary);
+    border: 3px solid var(--bg-primary);
     border-radius: 50%;
     display: flex;
-    align-items: center;
     justify-content: center;
-    /* 🚨 개선: 전역 변수 '--shadow-sm' 사용 */
+    align-items: center;
     box-shadow: var(--shadow-sm);
     transition: transform 0.2s;
 }
+
 .avatarWrapper:active .editBadge {
     transform: scale(0.9);
 }
 
-/* --- Forms & Typography --- */
 .infoForm {
     width: 100%;
     text-align: center;
@@ -171,15 +144,13 @@
 
 .displayBio {
     font-size: 1rem;
-    /* 🚨 개선: 전역 변수 사용 */
-    color: var(--text-secondary); 
+    color: var(--text-secondary);
     line-height: 1.5;
     white-space: pre-wrap;
     max-width: 80%;
     margin: 0 auto;
 }
 
-/* 편집 모드 인풋 스타일 (미니멀) */
 .inputGroup {
     margin-bottom: 1.5rem;
     text-align: left;
@@ -189,31 +160,27 @@
     display: block;
     font-size: 0.8rem;
     font-weight: 600;
-    /* 🚨 개선: 전역 변수 사용 */
-    color: var(--text-secondary); 
+    color: var(--text-secondary);
     margin-bottom: 0.5rem;
     padding-left: 4px;
 }
 
-.minimalInput, .minimalTextarea {
+.minimalInput,
+.minimalTextarea {
     width: 100%;
     padding: 0.75rem;
-    /* 🚨 개선: 전역 변수 '--border-light' 사용 */
-    border: 1px solid var(--border-light); 
+    border: 1px solid var(--border-light);
     border-radius: 12px;
-    /* 🚨 개선: 전역 변수 '--bg-secondary' 사용 */
-    background: var(--bg-secondary); 
+    background: var(--bg-secondary);
     color: var(--text-primary);
     transition: all 0.2s;
-    outline: none;
     box-sizing: border-box;
 }
 
-.minimalInput:focus, .minimalTextarea:focus {
-    /* 🚨 개선: 전역 변수 사용 */
-    background: var(--bg-primary); 
-    border-color: var(--color-primary); 
-    /* 🚨 오류 수정: box-shadow 구문 오류 수정 및 포커스 링 변수 가정 */
+.minimalInput:focus,
+.minimalTextarea:focus {
+    background: var(--bg-primary);
+    border-color: var(--color-primary);
     box-shadow: 0 0 0 3px var(--color-focus-ring, rgba(16, 185, 129, 0.2));
 }
 
@@ -221,7 +188,6 @@
     resize: none;
 }
 
-/* 🌟🌟🌟 추가: 닉네임 중복 확인 버튼 스타일 🌟🌟🌟 */
 .inputWithButton {
     display: flex;
     gap: 0.5rem;
@@ -232,7 +198,6 @@
 }
 
 .checkButton {
-    /* 🚨 문제 해결: 버튼 배경색과 글씨색 명확히 지정 */
     flex-shrink: 0;
     padding: 0.75rem 1rem;
     border: 1px solid var(--color-primary);
@@ -240,35 +205,31 @@
     font-weight: 600;
     font-size: 0.9rem;
     cursor: pointer;
+    background: var(--color-primary);
+    color: var(--bg-primary);
     transition: background 0.2s, opacity 0.2s;
-    
-    /* 💡 다크모드에서 글씨가 보이도록 색상 명확히 지정 */
-    color: var(--bg-primary); /* 배경색과 대비되는 색상으로 설정 */
-    background: var(--color-primary); 
 }
 
 .checkButton:disabled {
     opacity: 0.6;
     cursor: not-allowed;
-    border-color: var(--border-light);
     background: var(--bg-secondary);
-    color: var(--text-tertiary); /* 비활성화 시 텍스트 색상도 명확히 지정 */
+    border-color: var(--border-light);
+    color: var(--text-tertiary);
 }
 
-/* 🌟 추가: 닉네임 피드백 메시지 스타일 */
 .feedbackMessage {
     font-size: 0.8rem;
     margin-top: 0.5rem;
     display: flex;
     align-items: center;
     gap: 4px;
-    line-height: 1.2;
 }
+
 .feedbackMessage svg {
     flex-shrink: 0;
 }
 
-/* --- Settings List Group (iOS Style) --- */
 .settingsGroup {
     margin-bottom: 2rem;
 }
@@ -276,26 +237,22 @@
 .groupTitle {
     font-size: 0.85rem;
     font-weight: 600;
-    /* 🚨 개선: 전역 변수 사용 */
-    color: var(--text-secondary); 
+    color: var(--text-secondary);
     margin-bottom: 0.75rem;
     padding-left: 0.5rem;
-    text-transform: uppercase;
     letter-spacing: 0.05em;
+    text-transform: uppercase;
 }
 
 .settingsItem {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    /* 🚨 개선: 전역 변수 '--bg-card' 사용 */
-    background: var(--bg-card); 
+    background: var(--bg-card);
     padding: 1rem;
     border-radius: 16px;
-    /* 🚨 개선: 전역 변수 '--border-light' 사용 */
-    border: 1px solid var(--border-light); 
-    /* 🚨 개선: 전역 변수 '--shadow-sm' 사용 */
-    box-shadow: var(--shadow-sm); 
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
 }
 
 .itemLabel {
@@ -304,7 +261,6 @@
     color: var(--text-primary);
 }
 
-/* --- Logout --- */
 .dangerZone {
     margin-top: 3rem;
     text-align: center;
@@ -313,35 +269,32 @@
 .logoutButton {
     background: none;
     border: none;
-    font-size: 1rem;
-    font-weight: 600;
-    /* 🚨 개선: 전역 변수 '--color-danger' 사용 */
-    color: var(--color-danger, #ef4444); 
-    cursor: pointer;
+    color: var(--color-danger, #ef4444);
     padding: 1rem 2rem;
     border-radius: 12px;
-    transition: background 0.2s;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
 }
 
-.logoutButton:hover {
-    /* 🚨 개선: color-mix를 사용하여 다크 모드에서도 적절한 배경색이 되도록 보장 */
-    background: color-mix(in srgb, var(--color-danger, #ef4444) 10%, var(--bg-primary)); 
-}
-
-/* --- Loading --- */
 .loadingContainer {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
 }
+
 .spinner {
-    /* 🚨 개선: 전역 변수 사용 */
-    border: 3px solid var(--border-light); 
+    border: 3px solid var(--border-light);
     border-top: 3px solid var(--color-primary);
     border-radius: 50%;
     width: 24px;
     height: 24px;
     animation: spin 0.8s linear infinite;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}

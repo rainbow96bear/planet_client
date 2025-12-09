@@ -2,25 +2,20 @@
   import { createEventDispatcher } from 'svelte';
   import { goto } from '$app/navigation';
   import ProfileImg from '../common/profileImg/profileImg.svelte';
-  import { userProfile } from '$lib/stores/userProfile';
-  import { derived } from 'svelte/store';
+  import { user,isLoggedIn,auth } from '$lib/stores';
 
-  export let isMenuOpen : boolean;
+  export let isMenuOpen: boolean;
   const dispatch = createEventDispatcher();
-
   function handleToggleMenu() {
     dispatch('toggleMenu');
   }
-
-  // store 구독
-  const profile = derived(userProfile, $profile => $profile);
 </script>
 
 <div class="header-actions">
-  {#if $profile}
+  {#if $isLoggedIn}
     <button class="icon-btn desktop-only" on:click={() => goto('/explore')} title="탐색">🌍</button>
     <button class="avatar-btn" on:click={() => goto('/profile')} title="프로필">
-      <ProfileImg src={$profile.profile_image} alt={$profile.nickname} size={40} />
+      <ProfileImg src={$user.profileImage ?? undefined} alt={$user.nickname ?? ''} size={40} />
     </button>
     <button class="menu-btn mobile-only" on:click={handleToggleMenu}>
       {isMenuOpen ? '✕' : '☰'}
@@ -57,21 +52,6 @@
 .icon-btn:hover {
   background: var(--border-light);
   transform: scale(1.05);
-}
-
-/* 알림 배지 */
-.notification-badge {
-  position: absolute;
-  top: -0.25rem;
-  right: -0.25rem;
-  background: #EF4444;
-  color: white;
-  font-size: 0.625rem;
-  font-weight: bold;
-  padding: 0.125rem 0.375rem;
-  border-radius: 0.75rem;
-  min-width: 1rem;
-  text-align: center;
 }
 
 /* 아바타 버튼 */

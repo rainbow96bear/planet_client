@@ -7,13 +7,13 @@ import type { PageLoad } from './$types';
 export const load: PageLoad = async () => {
   const tokenState = get(auth);
   
-  if (!tokenState?.access_token) {
+  if (!tokenState?.accessToken) {
     return { isLoggedIn: false }; // 로그인 안 된 상태 처리
   }
 
   try {
     const res = await fetch('/api/me/profile', {
-      headers: { Authorization: `Bearer ${tokenState.access_token}` }
+      headers: { Authorization: `Bearer ${tokenState.accessToken}` }
     });
 
     if (!res.ok) {

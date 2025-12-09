@@ -4,7 +4,9 @@
  import { createEventDispatcher } from 'svelte';
  import styles from './Calendar.module.css';
  import { getCurrentYearMonth, generateMonthData, precomputeEventsByDate, mapMonthDataWithEvents, getCompletionStyle } from './Calendar';
- import { authFetch } from '$lib/utils/authFetch'; // 💡 [추가] API 호출을 위해 임포트
+	import { fetchWithToken } from '$lib/client/fetchWithToken';
+	import { get } from 'svelte/store';
+	import { auth } from '$lib/stores';
 
  export let events: CalendarEvent[] = []; 
  export let completionData: Record<number, number> = {};
@@ -62,9 +64,15 @@
 
     try {
         // 💡 API 호출: 일정 삭제
-        const res = await authFetch(`/api/me/calendar/events/${event.eventId}`, { 
+        const token = get(auth)?.accessToken;
+
+        const res = await fetchWithToken(
+        `/api/me/calendar/events/${event.eventId}`,
+        token, // 두 번째: accessToken
+        {
             method: 'DELETE'
-        });
+        }
+        );
 
         if (res.ok) {
             // ✅ [개선된 로직] 1. Svelte의 반응성을 이용해 로컬 events prop에서 삭제된 이벤트를 즉시 제거합니다.

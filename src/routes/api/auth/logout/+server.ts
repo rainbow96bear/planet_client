@@ -1,7 +1,7 @@
 // src/routes/api/user/logout/+server.ts
 import type { RequestHandler } from '@sveltejs/kit';
 
-const AUTH_SERVER_API_URL = process.env.VITE_AUTH_SERVER_API_URL;
+const AUTH_SERVER_GRAPHQL = process.env.VITE_AUTH_SERVER_GRAPHQL;
 
 export const POST: RequestHandler = async ({ request }) => {
     try {
@@ -10,7 +10,7 @@ export const POST: RequestHandler = async ({ request }) => {
         const cookieHeader = request.headers.get('cookie') ?? '';
 
         // 백엔드에 Cookie도 전달 -> Golang 기존 c.Cookie(...) 사용 가능
-        const res = await fetch(`${AUTH_SERVER_API_URL}/auth/logout`, {
+        const res = await fetch(`${AUTH_SERVER_GRAPHQL}/auth/logout`, {
             method: 'POST',
             headers: {
                 'Authorization': authHeader,

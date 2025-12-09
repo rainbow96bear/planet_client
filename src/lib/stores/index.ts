@@ -1,6 +1,6 @@
 export { theme } from './theme';
-export { auth, isLoggedIn, clearAuth, initAuth } from './auth';
-export { userProfile } from './userProfile';
+export { auth, isLoggedIn, clearAuth } from './auth';
+export { user } from './user';
 export {  feedStore,
   feeds,
   selectedFilter,

@@ -2,14 +2,11 @@
  import CalendarForm from '$lib/components/common/calendar/CalendarForm.svelte';
  import { page } from '$app/stores';
  import { onMount } from 'svelte';
- import { auth, clearAuth } from '$lib/stores/auth';
+ import { auth, user } from '$lib/stores';
  import { goto } from '$app/navigation';
  import { get } from 'svelte/store';
  import LoginRequired from '$lib/components/common/loginRequired/LoginRequired.svelte';
  import LoadingSpinner from '$lib/components/common/loadingSpinner/LoadingSpinner.svelte';
- import { userProfile } from '$lib/stores/userProfile';
- // 💡 개선: authFetch 유틸리티 임포트 (인증 로직 간소화)
- import { authFetch } from '$lib/utils/authFetch'; 
 
  // CalendarForm에서 전달되는 payload 타입 정의
  interface EventPayload {
@@ -32,7 +29,7 @@
   const tokenState = get(auth);
 
   // 💡 [개선] 인증 체크 및 로그인 메시지 설정
-  if (!tokenState?.access_token) {
+  if (!tokenState?.accessToken) {
    loginMessage = '로그인이 필요합니다.';
    isLoading = false;
    return;
@@ -72,13 +69,12 @@
   * @param event CalendarForm에서 전달된 CustomEvent<EventPayload>
   */
  async function handleSubmit(event: CustomEvent<EventPayload>) {
-  console.log("dkdkdkdkk")
   const eventId = $page.params.eventId;
   const payload = event.detail;
 
   const tokenState = get(auth);
 
-  if (!tokenState?.access_token) {
+  if (!tokenState?.accessToken) {
     alert('로그인이 필요합니다.');
     goto('/login');
     return;

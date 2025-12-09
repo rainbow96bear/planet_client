@@ -21,7 +21,6 @@ export const GET: RequestHandler = async ({ request, params }) => {
   }
 
   const data = await res.json();
-console.log(data)
   return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
 };
 

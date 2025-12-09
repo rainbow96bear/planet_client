@@ -1,6 +1,6 @@
 import type { RequestHandler } from "@sveltejs/kit";
 
-const AUTH_SERVER_API_URL = process.env.VITE_AUTH_SERVER_API_URL;
+const AUTH_SERVER_GRAPHQL = process.env.VITE_AUTH_SERVER_GRAPHQL;
 
 export const GET: RequestHandler = async ({ url }) => {
   const nickname = url.searchParams.get("nickname");
@@ -13,7 +13,7 @@ export const GET: RequestHandler = async ({ url }) => {
   }
 
   try {
-    const res = await fetch(`${AUTH_SERVER_API_URL}/auth/user/nickname/check?nickname=${encodeURIComponent(nickname)}`, {
+    const res = await fetch(`${AUTH_SERVER_GRAPHQL}/auth/user/nickname/check?nickname=${encodeURIComponent(nickname)}`, {
       method: "GET",
       headers: { "Content-Type": "application/json" }
     });

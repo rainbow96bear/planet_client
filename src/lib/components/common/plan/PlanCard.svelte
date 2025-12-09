@@ -5,9 +5,9 @@
   import { createEventDispatcher } from 'svelte';
   import styles from './PlanCard.module.css';
   import { get } from 'svelte/store';
-  import { auth } from '$lib/stores';
-  import { authFetch } from '$lib/utils/authFetch';
+  import { auth, user } from '$lib/stores';
   import { goto } from '$app/navigation'; 
+	import { fetchWithToken } from '$lib/client/fetchWithToken';
 
   // 💡 Props 변경: 단일 Event 대신 날짜 정보를 받습니다.
   export let year: number;
@@ -18,8 +18,8 @@
   const dispatch = createEventDispatcher();
   
   // 💡 내부 상태: 로딩, 오류, 이벤트 목록
-  const currentAuth = get(auth);
-  $: isOwner = currentAuth?.nickname === nickname;
+  const userData = get(user);
+  $: isOwner = userData?.nickname === nickname;
 
   let loading = true;
   let error: string | null = null;
@@ -44,7 +44,7 @@
       url += `?date=${dateString}`;
 
       // 2. API 호출
-      const res = await authFetch(url);
+      const res = await fetchWithToken(url);
       
       if (res.ok) {
         const data = await res.json();
@@ -84,14 +84,17 @@
 
     try {
       // API 호출 (Todo 개별 업데이트)
-      const res = await authFetch(`/api/me/todos/${todo.id}`, { 
-        method: 'PATCH',
-        headers: { 
-          'Content-Type': 'application/json' 
-        },
-        // 💡 현재 UI에 반영된 todo.isDone 값을 서버로 보냅니다.
-        body: JSON.stringify({ is_done: todo.isDone }) 
-      });
+      const token = get(auth)?.accessToken;
+
+      const res = await fetchWithToken(
+        `/api/me/todos/${todo.id}`,
+        token, // ← 두 번째 인자 (accessToken)
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ is_done: todo.isDone })
+        }
+      );
       
       if (!res.ok) {
         const errorBody = await res.json().catch(() => ({ message: 'Unknown error' }));

@@ -4,7 +4,7 @@
   import HeaderActions from './HeaderActions.svelte';
   import MobileMenu from './MobileMenu.svelte';
 	import { get } from 'svelte/store';
-	import { userProfile } from '$lib/stores/userProfile';
+	import { user } from '$lib/stores';
 
   let isMenuOpen = false;
 
@@ -25,14 +25,14 @@
       <span class="logo-text">Planet</span>
     </button>
 
-    {#if $userProfile}
+    {#if $user}
       <SearchBar placeholder="계획, 친구, 태그 검색..." on:search={handleSearch}/>
     {/if}
 
     <HeaderActions {isMenuOpen} on:toggleMenu={toggleMenu} />
   </div>
 
-  {#if $userProfile && isMenuOpen}
+  {#if $user && isMenuOpen}
     <MobileMenu on:close={toggleMenu} />
   {/if}
 </div>
