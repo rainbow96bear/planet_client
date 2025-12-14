@@ -1,28 +1,19 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
-
+  import { isLoggedIn, user } from '$lib/stores';
   import UserProfileHeader from '$lib/components/profile/UserProfileHeader.svelte';
   import Calendar from '$lib/components/common/calendar/Calendar.svelte';
   import FeedCard from '$lib/components/common/feed/FeedCard.svelte';
   import LoadingSpinner from '$lib/components/common/loadingSpinner/LoadingSpinner.svelte';
-
   import styles from './page.module.css';
   import { ArrowLeft, ArrowRight } from 'lucide-svelte';
+  import { loadProfile, loadCalendar, loadFeed, fetchIsFollowing } from './page';
+  import type { CalendarDayEvent } from '$lib/types/calendar';
 
-  import {
-    loadProfile,
-    loadCalendar,
-    loadFeed,
-    fetchIsFollowing
-  } from './page';
-
-  import { user } from '$lib/stores';
-	import type { CalendarData } from '$lib/types/calendar';
-
-  // -----------------------------------
+  // ---------------------------
   // 기본 값
-  // -----------------------------------
+  // ---------------------------
   $: nickname = $page.params.nickname ?? '';
 
   let profile: any = null;
@@ -36,22 +27,14 @@
   let feedData: any[] = [];
   let activeView: 'calendar' | 'feed' = 'calendar';
 
-  let calendarData: CalendarData = {
-    events: [],
-    monthData: [[]],
-    completionData: {},
-    year: new Date().getFullYear(),
-    month: new Date().getMonth() + 1
-  };
+  let calendarEvents: CalendarDayEvent[] = [];
+  let currentYear = new Date().getFullYear();
+  let currentMonth = new Date().getMonth() + 1;
 
-  let currentYear = calendarData.year;
-  let currentMonth = calendarData.month;
-
-  // -----------------------------------
+  // ---------------------------
   // 초기 로드
-  // -----------------------------------
+  // ---------------------------
   onMount(async () => {
-    // 스토어에서 바로 구독
     const userData = $user;
 
     // 내 프로필인지 판별
@@ -66,9 +49,9 @@
     profile = await loadProfile(nickname, isMyProfile);
     isLoadingProfile = false;
 
-    // 내 프로필이면 user 스토어 업데이트 (theme은 유지)
+    // 내 프로필이면 user 스토어 업데이트
     if (isMyProfile) {
-      user.update((u) => ({
+      user.update(u => ({
         ...u,
         id: profile.id,
         nickname: profile.nickname,
@@ -78,14 +61,25 @@
       }));
     }
 
-    // 캘린더 데이터 로드
-    calendarData = await loadCalendar(nickname, currentYear, currentMonth);
-    isLoadingCalendar = false;
+    // 캘린더 이벤트 로드
+    await loadCalendarEvents();
   });
 
-  // -----------------------------------
+  async function loadCalendarEvents() {
+    isLoadingCalendar = true;
+    try {
+      calendarEvents = await loadCalendar(nickname, currentYear, currentMonth);
+    } catch (err) {
+      console.error('캘린더 불러오기 실패', err);
+      calendarEvents = [];
+    } finally {
+      isLoadingCalendar = false;
+    }
+  }
+
+  // ---------------------------
   // 탭 변경
-  // -----------------------------------
+  // ---------------------------
   async function handleTabChange(view: 'calendar' | 'feed') {
     activeView = view;
 
@@ -96,9 +90,9 @@
     }
   }
 
-  // -----------------------------------
+  // ---------------------------
   // 월 변경
-  // -----------------------------------
+  // ---------------------------
   async function changeMonth(offset: number) {
     let newMonth = currentMonth + offset;
     let newYear = currentYear;
@@ -114,14 +108,12 @@
     currentMonth = newMonth;
     currentYear = newYear;
 
-    isLoadingCalendar = true;
-    calendarData = await loadCalendar(nickname, currentYear, currentMonth);
-    isLoadingCalendar = false;
+    await loadCalendarEvents();
   }
 
-  // -----------------------------------
+  // ---------------------------
   // 캘린더 이벤트 핸들러
-  // -----------------------------------
+  // ---------------------------
   function handleAddEvent(e: CustomEvent) {
     const { year, month, day } = e.detail;
     alert(`${year}년 ${month}월 ${day}일 일정 추가`);
@@ -133,24 +125,23 @@
 
   async function handleDeleteEvent(e: CustomEvent) {
     const { event } = e.detail;
-
     if (!confirm(`"${event.title}" 일정을 삭제할까요?`)) return;
 
     try {
       const token = localStorage.getItem("access_token");
       if (!token) throw new Error("토큰 없음");
 
-      const res = await fetch(`/api/me/calendar/events/${event.eventId}`, {
+      const res = await fetch(`/api/me/calendar/events/${event.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
 
       if (!res.ok) throw new Error();
-
       alert("삭제 완료");
-      await changeMonth(0);
+      await loadCalendarEvents();
     } catch (err) {
       alert("삭제 실패");
+      console.error(err);
     }
   }
 </script>
@@ -158,8 +149,10 @@
 <div class={styles.container}>
   <UserProfileHeader
     isLoading={isLoadingProfile}
-    {isMyProfile}
-    {isFollowing}
+    profile={profile}
+    isMyProfile={isMyProfile}
+    isFollowing={isFollowing}
+    isLoggedIn={$isLoggedIn}
   />
 
   <!-- 탭 -->
@@ -171,7 +164,6 @@
       >
         📅 캘린더
       </button>
-
       <button
         class:active={activeView === 'feed'}
         on:click={() => handleTabChange('feed')}
@@ -202,12 +194,10 @@
         <LoadingSpinner message="캘린더 불러오는 중..." />
       {:else}
         <Calendar
-          events={calendarData.events}
-          monthData={calendarData.monthData}
-          completionData={calendarData.completionData}
-          year={calendarData.year}
-          month={calendarData.month}
-          {nickname}
+          events={calendarEvents}
+          nickname={nickname}
+          year={currentYear}          
+          month={currentMonth}       
           on:addEvent={handleAddEvent}
           on:editEvent={handleEditEvent}
           on:deleteEvent={handleDeleteEvent}

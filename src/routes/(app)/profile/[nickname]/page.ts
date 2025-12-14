@@ -1,8 +1,8 @@
 import { user, auth } from '$lib/stores';
 import type { UserProfile } from '$lib/types/profile';
-import type { CalendarData } from '$lib/types/calendar';
+import type { CalendarEvent } from '$lib/types/calendar';
 import { get } from 'svelte/store';
-import { fetchWithToken } from '$lib/client/fetchWithToken';
+import { apiFetch } from '$lib/client/apiFetch';
 
 // ---------------------------
 // 초기값 생성
@@ -33,10 +33,9 @@ export async function loadProfile(
     : `/api/users/${nickname}/profile`;
 
   try {
-    const token = isMyProfile ? get(auth)?.accessToken : null;
+    const token = isMyProfile ? get(auth)?.accessToken : undefined;
 
-    const res = await fetchWithToken(endpoint, token);
-
+    const res = await apiFetch(endpoint, { accessToken: token });
     if (!res.ok) {
       console.error(`프로필 조회 실패: ${res.status} ${res.statusText}`);
       throw new Error('프로필 조회 실패');
@@ -57,7 +56,9 @@ export async function fetchIsFollowing(
   try {
     const token = get(auth)?.accessToken;
 
-    const res = await fetchWithToken(`/api/me/follows/${nickname}`, token);
+    const res = await apiFetch(`/api/me/follows/${nickname}`, {
+      accessToken: token
+    });
 
     if (res.status === 401 || res.status === 403) {
       return null; // 인증 실패 → 팔로우 여부 알 수 없음
@@ -74,13 +75,13 @@ export async function fetchIsFollowing(
 }
 
 // ---------------------------
-// 캘린더 조회
+// 캘린더 조회 (이벤트 배열만 반환)
 // ---------------------------
 export async function loadCalendar(
   nickname: string,
   currentYear: number,
   currentMonth: number
-): Promise<CalendarData> {
+): Promise<CalendarEvent[]> {
   try {
     const isMine = get(user)?.nickname === nickname;
 
@@ -89,31 +90,18 @@ export async function loadCalendar(
       : `/api/users/${nickname}/calendar`;
 
     url += `?year=${currentYear}&month=${currentMonth}`;
+    const token = isMine ? get(auth)?.accessToken : undefined;
 
-    const token = isMine ? get(auth)?.accessToken : null;
-
-    const res = await fetchWithToken(url, token);
+    const res = await apiFetch(url, { accessToken: token });
 
     if (!res.ok) throw new Error('캘린더 조회 실패');
 
     const data = await res.json();
-
-    return {
-      events: data.events ?? [],
-      monthData: data.monthData ?? [],
-      completionData: data.completionData ?? {},
-      year: currentYear,
-      month: currentMonth
-    };
+    // 이제 이벤트 배열만 반환
+    return data;
   } catch (err) {
     console.error(err);
-    return {
-      events: [],
-      monthData: [],
-      completionData: {},
-      year: currentYear,
-      month: currentMonth
-    };
+    return [];
   }
 }
 

@@ -2,7 +2,7 @@ import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { auth, user, clearAuth } from '$lib/stores';
 import { setTheme } from '$lib/stores/user';
-import { fetchWithToken } from '$lib/client/fetchWithToken';
+import { apiFetch } from '$lib/client/apiFetch';
 
 // ==========================================
 // 🌟 프로필 불러오기 (fetchUserProfile)
@@ -12,8 +12,8 @@ export async function fetchUserProfile() {
     if (!token) return;
 
     try {
-        const data = await fetchWithToken('/api/me/profile', token);
-
+        const res = await apiFetch('/api/me/profile', {accessToken:token});
+        const data = await res.json();
         user.set({
             id: data.id ?? null,
             nickname: data.nickname ?? null,
@@ -54,9 +54,10 @@ export async function handleThemeChange(event: CustomEvent<string>) {
     if (!token) return;
 
     try {
-        await fetchWithToken('/api/me/theme', token, {
+        await apiFetch('/api/me/theme', {
             method: 'PATCH',
-            body: JSON.stringify({ nickname: nickname, theme: newTheme })
+            body: JSON.stringify({ nickname: nickname, theme: newTheme }),
+            accessToken:token,
         });
 
     } catch (err) {
@@ -111,9 +112,9 @@ export async function checkNicknameAvailability(nickname: string) {
     }
 
     try {
-        const data = await fetchWithToken(
+        const data = await apiFetch(
             `/api/account/availability?field=nickname&value=${encodeURIComponent(nickname)}`,
-            token
+            {accessToken: token}
         );
 
         return data;
@@ -142,11 +143,12 @@ export async function updateProfile(
             ...(profileImage !== undefined && { profile_image: profileImage })
         };
         console.log("token : : : ",token)
-        const data = await fetchWithToken('/api/me/profile', token, {
+        const res = await apiFetch('/api/me/profile', {
             method: 'PATCH',
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
+            accessToken:token
         });
-
+        const data = await res.json();
         // UI 업데이트
         user.update((curr) => ({
             ...curr,

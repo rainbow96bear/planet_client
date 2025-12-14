@@ -1,69 +1,29 @@
 import type { RequestHandler } from '@sveltejs/kit';
+import { json } from '@sveltejs/kit';
+import { graphqlWithAuth } from '$lib/server/graphqlWithAuth';
+import { GET_MY_CALENDAR_EVENTS } from '$lib/graphql';
 
-const USER_SERVER_API_URL = process.env.VITE_USER_SERVER_API_URL;
+const USER_SERVER_GRAPHQL = process.env.VITE_USER_SERVER_GRAPHQL;
 
-// GET: 본인 일정 조회 (한 달 단위)
-export const GET: RequestHandler = async ({ request }) => {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader) {
-    return new Response(JSON.stringify({ error: '로그인이 필요합니다.' }), { status: 401 });
+export const GET: RequestHandler = async (event) => {
+  try {
+    const url = new URL(event.request.url);
+    const year = Number(url.searchParams.get('year'));
+    const month = Number(url.searchParams.get('month'));
+
+    if (!year || !month) {
+      return json({ error: 'year, month 필요' }, { status: 400 });
+    }
+
+    const data = await graphqlWithAuth(
+      USER_SERVER_GRAPHQL!,
+      GET_MY_CALENDAR_EVENTS,
+      { year, month },
+      event
+    );
+    return json(data.myCalendarEvents, { status: 200 });
+  } catch (err) {
+    console.error('GET /api/me/calendar error:', err);
+    return json({ error: '서버 내부 오류' }, { status: 500 });
   }
-
-  // 쿼리 파라미터 받기
-  const url = new URL(request.url);
-  const year = url.searchParams.get('year');
-  const month = url.searchParams.get('month');
-
-  if (!year || !month) {
-    return new Response(JSON.stringify({ error: 'year과 month 쿼리 필요' }), { status: 400 });
-  }
-
-  // 백엔드 API 호출 시 쿼리 포함
-  const apiUrl = `${USER_SERVER_API_URL}/me/calendar?year=${year}&month=${month}`;
-
-  const res = await fetch(apiUrl, {
-    headers: { Authorization: authHeader },
-  });
-
-  if (!res.ok) {
-    return new Response(JSON.stringify({ error: '조회 실패' }), { status: res.status });
-  }
-
-  const data = await res.json();
-
-  return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
-};
-
-// POST: 새 일정 등록
-export const POST: RequestHandler = async ({ request }) => {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader) {
-    return new Response(JSON.stringify({ error: '로그인이 필요합니다.' }), {
-      status: 401
-    });
-  }
-
-  // JSON 요청 파싱
-  const jsonData = await request.json();
-
-  // 백엔드 서버로 JSON 그대로 전달
-  const res = await fetch(`${USER_SERVER_API_URL}/calendar`, {
-    method: 'POST',
-    headers: {
-      Authorization: authHeader,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(jsonData)   // ← 여기 반드시 stringify 필요
-  });
-
-  if (!res.ok) {
-    return new Response(JSON.stringify({ error: '등록 실패' }), {
-      status: res.status
-    });
-  }
-
-  const data = await res.json();
-  return new Response(JSON.stringify(data), {
-    headers: { 'Content-Type': 'application/json' }
-  });
 };

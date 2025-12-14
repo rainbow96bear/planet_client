@@ -5,7 +5,7 @@ export interface Todo {
   id: string; 
   EventID: string; // FK to CalendarDayEvent.eventId (UUID)
   UserID: string;  // Todo 소유자 ID (UUID)
-  content: string; // 할 일 내용 (Go: Content)
+  content: string; // 할 일 내용
   isDone: boolean; 
   dueTime?: string;
 }
@@ -14,16 +14,14 @@ export interface Todo {
 // CalendarEvent
 // -----------------------------
 export interface CalendarEvent {
-  eventId: number;           // API 응답의 eventId와 일치
-  UserID: string;            // 이벤트 소유자 UUID
+  eventId: string;
   title: string;
-  description?: string;      // 선택적 설명 필드
-  emoji: string;
-  startAt: string;           // ISO 8601 형식 또는 "YYYY-MM-DD"
-  endAt: string;             // ISO 8601 형식 또는 "YYYY-MM-DD"
-  visibility: 'public' | 'friends' | 'private';
-  created_at?: string;
-  updated_at?: string;
+  startAt: string;
+  endAt: string;
+  emoji?: string;
+  visibility?: 'private' | 'public';
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // -----------------------------
@@ -71,13 +69,15 @@ export interface CalendarFilter {
 export interface MonthDataWithEvents {
   day: number;
   dayEvents: CalendarEvent[];
-  completion: number;
   isSunday: boolean;
   isSaturday: boolean;
 }
 
+// -----------------------------
+// 월별 데이터 매트릭스
+// -----------------------------
 export type MonthData = (number | null)[][];
 
-// null 포함 가능하도록 새로운 타입 정의
+// null 포함 가능하도록 안전하게 정의
 export type MonthDataWithEventsRow = (MonthDataWithEvents | null)[];
 export type MonthDataWithEventsMatrix = MonthDataWithEventsRow[];

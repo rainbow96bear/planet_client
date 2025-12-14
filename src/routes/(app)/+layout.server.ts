@@ -42,15 +42,12 @@ export const load: LayoutServerLoad = async ({ cookies, fetch }) => {
 
     try {
         // --- Access Token 갱신 로직 (GraphQL 직접 요청) ---
-        
         // 1. GraphQL을 사용하여 RT를 전송하고 새 AT를 요청
-        // 🚨 내부 fetch('/api/auth/token/access') 호출이 GraphQL 요청으로 대체됨
         const data = await graphqlRequest<AccessTokenResponse>(
             AUTH_SERVER_GRAPHQL,
             ISSUE_ACCESS_TOKEN,
             { refreshToken }, // RT를 GraphQL 변수로 전달
         );
-
         if (!data || !data.issueAccessToken) {
             throw new Error("GraphQL response missing issueAccessToken data.");
         }
@@ -78,7 +75,6 @@ export const load: LayoutServerLoad = async ({ cookies, fetch }) => {
         if (!profileResponse.ok) {
             throw new Error(`Failed to fetch profile: ${profileResponse.statusText}`);
         }
-        
         profile = await profileResponse.json();
         
         // 5. 최종 반환

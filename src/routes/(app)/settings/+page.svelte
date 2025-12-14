@@ -277,9 +277,12 @@
 
                 <div class={styles.settingsItem}>
                     <span class={styles.itemLabel}>테마 설정</span>
-                    <div class={styles.itemAction}>
-                        <ThemeSelector currentTheme={$user.theme} on:change={handleThemeChange} />
-                    </div>
+                    {#if $user?.theme}
+                        <ThemeSelector
+                            currentTheme={$user.theme}
+                            on:change={handleThemeChange}
+                        />
+                    {/if}
                 </div>
             </section>
 

@@ -7,7 +7,6 @@ import { auth ,user} from '$lib/stores';
 type ThemeType = 'light' | 'dark';
 
 export const load: LayoutLoad = async ({ data }) => {
-    
     // 1. 서버에서 전달된 data 객체를 통해 로그인 상태 확인
     if (data.isLoggedIn && data.profile) {
         

@@ -1,32 +1,17 @@
 // src/routes/profile/+page.ts
-import { get } from 'svelte/store';
-import { auth } from '$lib/stores/auth';
 import { goto } from '$app/navigation';
 import type { PageLoad } from './$types';
 
-export const load: PageLoad = async () => {
-  const tokenState = get(auth);
-  
-  if (!tokenState?.accessToken) {
-    return { isLoggedIn: false }; // 로그인 안 된 상태 처리
+export const load: PageLoad = async ({ parent }) => {
+  // layout에서 내려준 데이터 받기
+  const { isLoggedIn, profile } = await parent();
+
+  // 1. 로그인 안 된 경우 → 로그인 페이지
+  if (!isLoggedIn || !profile) {
+    goto('/login');
+    return;
   }
 
-  try {
-    const res = await fetch('/api/me/profile', {
-      headers: { Authorization: `Bearer ${tokenState.accessToken}` }
-    });
-
-    if (!res.ok) {
-      return { isLoggedIn: false };
-    }
-
-    const profile = await res.json();
-    if (!profile?.nickname) return { isLoggedIn: false };
-
-    // 로그인 상태면 닉네임 페이지로 이동
-    goto(`/profile/${profile.nickname}`);
-    return { isLoggedIn: true };
-  } catch {
-    return { isLoggedIn: false };
-  }
+  // 2. 로그인 된 경우 → 본인 프로필 페이지
+  goto(`/profile/${profile.nickname}`);
 };

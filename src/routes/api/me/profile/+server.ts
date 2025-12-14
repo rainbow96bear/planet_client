@@ -15,7 +15,7 @@ export const GET: RequestHandler = async ( event ) => {
       {}, 
       event
     );
-    return json(data.me, { status: 200 });
+    return json(data.myProfile, { status: 200 });
   } catch (err) {
     console.error('GET /api/me/profile error:', err);
     return json({ error: '서버 내부 오류' }, { status: 500 });

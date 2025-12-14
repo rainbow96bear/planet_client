@@ -1,6 +1,6 @@
 export const GET_PROFILE = `
   query GetProfile {
-    me {
+    myProfile {
       id
       nickname
       bio
@@ -28,7 +28,7 @@ export const UPDATE_PROFILE = `
 
 export const UPDATE_PROFILE_THEME = `
   mutation UpdateTheme($input: UpdateProfileInput!) {
-    updateProfile(input: $input) {
+    updateMyProfile(input: $input) {
       id
       userID
       nickname

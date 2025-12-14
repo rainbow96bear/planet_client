@@ -48,11 +48,9 @@ export function precomputeEventsByDate(events: CalendarEvent[], year: number, mo
   return map;
 }
 
-// monthData + events + completionData 변환
 export function mapMonthDataWithEvents(
   monthData: MonthData,
   events: CalendarEvent[],
-  completionData: Record<number, number>,
   year: number,
   month: number,
   eventsByDateMap: Record<number, CalendarEvent[]>
@@ -63,7 +61,6 @@ export function mapMonthDataWithEvents(
       return {
         day,
         dayEvents: eventsByDateMap[day] ?? [],
-        completion: completionData[day] ?? 0,
         isSunday: dayIdx === 0,
         isSaturday: dayIdx === 6
       };

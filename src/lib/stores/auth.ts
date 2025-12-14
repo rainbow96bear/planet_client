@@ -2,11 +2,11 @@
 import { writable, derived } from 'svelte/store';
 
 export const auth = writable<{
-  accessToken: string | null;
+  accessToken: string | undefined;
   userId: string | null;
   expiresAt: number | null; // UNIX timestamp
 }>({
-  accessToken: null,
+  accessToken: undefined,
   userId: null,
   expiresAt: null
 });
@@ -19,7 +19,7 @@ export const isLoggedIn = derived(auth, ($auth) => {
 // ✔ Auth 전체 초기화 (로그아웃용)
 export function clearAuth() {
   auth.set({
-    accessToken: null,
+    accessToken: undefined,
     userId: null,
     expiresAt: null
   });

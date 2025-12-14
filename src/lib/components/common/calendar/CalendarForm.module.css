@@ -416,12 +416,12 @@
 /* ✅ 선택된 상태 - CSS 모듈용 */
 .visibilityBtn.active,
 .active {
-    background: rgba(125, 189, 182, 0.15) !important;
-    border-color: #7DBDB6 !important;
-    color: #7DBDB6 !important;
-    font-weight: 600 !important;
-    box-shadow: 0 2px 8px -2px rgba(125, 189, 182, 0.3) !important;
+  background: rgba(125, 189, 182, 0.15);
+  border-color: #7DBDB6;
+  color: #7DBDB6;
+  font-weight: 600;
 }
+
 
 /* 다크모드에서 선택된 상태 */
 :root[data-theme="dark"] .visibilityBtn.active,

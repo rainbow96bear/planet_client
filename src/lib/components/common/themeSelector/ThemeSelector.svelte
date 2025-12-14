@@ -1,13 +1,21 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
   import styles from './ThemeSelector.module.css';
 
-  export let currentTheme:string;
+  export let currentTheme: string;
   const dispatch = createEventDispatcher();
 
-  function selectTheme(newTheme: 'light' | 'dark') {
+  onMount(() => {
+    const domTheme =
+      document.documentElement.getAttribute('data-theme') as 'light' | 'dark';
+
+    if (domTheme && domTheme !== currentTheme) {
+      currentTheme = domTheme;
+    }
+  });
+
+  function selectTheme(newTheme: string) {
     currentTheme = newTheme;
-    // 실제 :root[data-theme] 변경
     dispatch('change', newTheme);
   }
 </script>

@@ -21,7 +21,7 @@ export const PATCH: RequestHandler = async (event) => {
 
     const variables = {
       input: {
-        theme: body.theme   // 🎯 유저가 변경할 테마
+        theme: body.theme
       }
     };
 
