@@ -16,7 +16,6 @@ export const GET: RequestHandler = async (event) => {
       { eventId },
       event
     );
-
     return json(data.myCalendarEvent);
   } catch (err) {
     console.error('GET /api/calendar/events/[eventId]', err);
@@ -46,7 +45,6 @@ export const PUT: RequestHandler = async (event) => {
 export const DELETE: RequestHandler = async (event) => {
   try {
     const eventId = event.params.eventId;
-
     await graphqlWithAuth(
       USER_SERVER_GRAPHQL!,
       DELETE_CALENDAR_EVENT,

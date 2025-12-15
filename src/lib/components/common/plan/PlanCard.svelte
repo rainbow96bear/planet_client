@@ -44,6 +44,7 @@
 
       if (res.ok) {
         const data = await res.json();
+        
         dailyPlans = data.dailyPlans || [];
       } else {
         const errBody = await res.json().catch(() => ({ message: res.statusText }));
@@ -61,11 +62,6 @@
   onMount(() => {
     if (day) loadDailyPlans(year, month, day);
   });
-
-  // day, month, year 변경 시 재로드
-  $: if (day && year && month) {
-    loadDailyPlans(year, month, day);
-  }
 
   // -------------------- Todo 상태 업데이트 --------------------
   async function toggleTodoDone(event: CalendarDayEvent, todo: Todo) {
@@ -87,7 +83,7 @@
         throw new Error(errBody.message);
       }
 
-      dispatch('todoUpdated', { eventId: event.eventId });
+      dispatch('todoUpdated', { eventId: event.id });
     } catch (e) {
       console.error('Todo status update failed:', e);
       todo.isDone = !todo.isDone; // 롤백
@@ -127,13 +123,13 @@
   }
 
   function handleEdit(event: CalendarEvent) {
-    goto(`/calendar/${event.eventId}/edit`);
+    goto(`/calendar/${event.id}/edit`);
     dispatch('closePopup');
   }
 
   function handleDelete(event: CalendarEvent) {
     dispatch('delete', event);
-    dailyPlans = dailyPlans.filter(p => p.eventId !== event.eventId);
+    dailyPlans = dailyPlans.filter(p => p.id !== event.id);
   }
 </script>
 
@@ -148,7 +144,7 @@
     <div class={styles.noEvents}>해당 날짜에 등록된 일정이 없습니다.</div>
   {:else}
     <div class={styles.popupEvents}>
-      {#each dailyPlans as event (event.eventId)}
+      {#each dailyPlans as event (event.id)}
         {@const todos = event.todos || []}
         {@const doneCount = todos.filter(t => t.isDone).length}
         {@const visibilityInfo = getVisibilityInfo(event.visibility)}

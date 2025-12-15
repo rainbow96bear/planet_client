@@ -23,7 +23,6 @@ export const GET: RequestHandler = async (event) => {
       { date: toRFC3339Nano(dateString) },
       event
     );
-
     return json({ dailyPlans: data.myCalendarEventsByDate });
   } catch (err) {
     console.error('GET /api/me/plans/daily error:', err);

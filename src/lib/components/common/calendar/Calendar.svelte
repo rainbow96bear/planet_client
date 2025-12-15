@@ -14,7 +14,6 @@
   export let month: number|undefined;
 
   const dispatch = createEventDispatcher();
-
   // 오늘 기준
   const today = new Date();
   const currentYear: number = year ?? today.getFullYear();
@@ -55,14 +54,14 @@
       // 실제 API 호출 가능
       const token = get(auth)?.accessToken;
       const res = await apiFetch(
-        `/api/me/calendar/events/${event.eventId}`,
+        `/api/me/calendar/events/${event.id}`,
         { method: 'DELETE', accessToken: token }
       );
 
       if (!res.ok) throw new Error('삭제 실패');
 
       // 로컬 배열에서 삭제
-      events = events.filter(ev => ev.eventId !== event.eventId);
+      events = events.filter(ev => ev.id !== event.id);
 
       showDayPopup = false;
       selectedDay = null;
@@ -104,7 +103,7 @@
 
                 {#if dayObj.dayEvents.length > 0}
                   <div class={styles.dayEvents}>
-                    {#each dayObj.dayEvents.slice(0,3) as event (event.eventId)}
+                    {#each dayObj.dayEvents.slice(0,3) as event (event.id)}
                       <div class={styles.eventItem} title={event.title}>
                         <span class={styles.eventTitle}>{event.title}</span>
                       </div>

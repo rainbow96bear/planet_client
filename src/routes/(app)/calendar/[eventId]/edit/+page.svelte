@@ -7,6 +7,7 @@
  import { get } from 'svelte/store';
  import LoginRequired from '$lib/components/common/loginRequired/LoginRequired.svelte';
  import LoadingSpinner from '$lib/components/common/loadingSpinner/LoadingSpinner.svelte';
+	import { apiFetch } from '$lib/client/apiFetch';
 
  // CalendarForm에서 전달되는 payload 타입 정의
  interface EventPayload {
@@ -40,7 +41,7 @@
   
   // 💡 [개선] authFetch 사용
   try {
-   const res = await authFetch(`/api/me/calendar/events/${eventId}`, {
+   const res = await apiFetch(`/api/me/calendar/events/${eventId}`, {
     method: 'GET'
    });
 
@@ -48,8 +49,7 @@
     eventData = await res.json();
    } else if (res.status === 401) {
     loginMessage = '권한이 만료되었습니다. 다시 로그인해주세요.';
-    clearAuth();
-    userProfile.set(null);
+    user.set({ id: null, nickname: null, profileImage: undefined, bio: "", theme: 'light'});
     goto('/login'); // 401 발생 시 로그인 페이지로 이동
    } else if (res.status === 404) {
     loginMessage = '일정 정보를 찾을 수 없거나 접근 권한이 없습니다.';
@@ -72,9 +72,9 @@
   const eventId = $page.params.eventId;
   const payload = event.detail;
 
-  const tokenState = get(auth);
-
-  if (!tokenState?.accessToken) {
+  const loggedIn = get(isLoggedIn);
+  const token = get(auth).accessToken;
+  if (!loggedIn) {
     alert('로그인이 필요합니다.');
     goto('/login');
     return;
@@ -82,24 +82,23 @@
 
   // 💡 [개선] authFetch 사용 및 JSON 형식으로 전송
   try {
-   const res = await authFetch(`/api/me/calendar/events/${eventId}`, {
+   const res = await apiFetch(`/api/me/calendar/events/${eventId}`, {
     method: 'PUT',
     headers: { 
-      Authorization: `Bearer ${tokenState.access_token}`,
+      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json'
      },
     body: JSON.stringify(payload), // 💡 객체를 JSON 문자열로 변환
    });
    
    if (res.ok) {
-    const currentProfile = get(userProfile);
+    const currentProfile = get(user);
     const nickname = currentProfile?.nickname || 'me'; // 닉네임이 없으면 'me' 또는 기본 경로로 대체
     await goto(`/profile/${nickname}`);
    
    } else if (res.status === 401) {
     loginMessage = '권한이 없습니다. 다시 로그인해주세요.';
-    clearAuth();
-    userProfile.set(null);
+    user.set({ id: null, nickname: null, profileImage: undefined, bio: "", theme: 'light'});
     goto('/login');
    } else {
     const errorData = await res.json().catch(() => ({ message: '알 수 없는 오류' }));
@@ -114,7 +113,7 @@
 
  function handleCancel() {
   // 💡 [개선] 취소 시 사용자 프로필 페이지로 리다이렉션
-  const currentProfile = get(userProfile);
+  const currentProfile = get(user);
   const nickname = currentProfile?.nickname || 'me';
   goto(`/profile/${nickname}`);
  }

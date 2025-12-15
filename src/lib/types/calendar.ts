@@ -14,7 +14,7 @@ export interface Todo {
 // CalendarEvent
 // -----------------------------
 export interface CalendarEvent {
-  eventId: string;
+  id: string;
   title: string;
   startAt: string;
   endAt: string;
