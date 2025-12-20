@@ -36,7 +36,7 @@ export const load: LayoutLoad = async ({ data }) => {
 
     } else {
         // 4. 비로그인 상태일 때 Store 초기화
-        auth.set({ accessToken: null, userId: null, expiresAt: null});
+        auth.set({ accessToken: undefined, userId: null, expiresAt: null});
         user.set({ id: null, nickname: null, profileImage: undefined, bio: "", theme: 'light'});
     }
 

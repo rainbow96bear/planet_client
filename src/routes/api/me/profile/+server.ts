@@ -3,24 +3,22 @@ import { json } from '@sveltejs/kit';
 import { graphqlWithAuth } from '$lib/server/graphqlWithAuth';
 import { GET_PROFILE, UPDATE_PROFILE } from '$lib/graphql/profile.graphql';
 import { env } from 'process';
+import { UnauthorizedError } from '$lib/server/errors';
 
 const USER_SERVER_GRAPHQL = env.VITE_USER_SERVER_GRAPHQL;
 
 // GET: 사용자 프로필 조회
-export const GET: RequestHandler = async ( event ) => {
-  try {
-    const data = await graphqlWithAuth(
-      USER_SERVER_GRAPHQL!, 
-      GET_PROFILE, 
-      {}, 
-      event
-    );
-    return json(data.myProfile, { status: 200 });
-  } catch (err) {
-    console.error('GET /api/me/profile error:', err);
-    return json({ error: '서버 내부 오류' }, { status: 500 });
-  }
+export const GET: RequestHandler = async (event) => {
+  const data = await graphqlWithAuth(
+    USER_SERVER_GRAPHQL!,
+    GET_PROFILE,
+    {},
+    event
+  );
+
+  return json(data.myProfile);
 };
+
 
 // PATCH: 사용자 프로필 업데이트
 export const PATCH: RequestHandler = async (event) => { 

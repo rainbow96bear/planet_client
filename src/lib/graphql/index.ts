@@ -9,3 +9,6 @@ export {
     GET_MY_CALENDAR_EVENT, 
     GET_MY_CALENDAR_EVENTS
 } from "./calendar.graphql"
+export {
+    UPDATE_TODO_DONE
+} from "./todos.graphql"

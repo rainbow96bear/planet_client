@@ -2,8 +2,8 @@
   import { createEventDispatcher } from 'svelte';
   import { goto } from '$app/navigation';
   import ProfileImg from '../common/profileImg/profileImg.svelte';
-  import { user,isLoggedIn,auth } from '$lib/stores';
-
+  import { user,isLoggedIn } from '$lib/stores';
+console.log("isLoggedInisLoggedIn : ", $isLoggedIn)
   export let isMenuOpen: boolean;
   const dispatch = createEventDispatcher();
   function handleToggleMenu() {

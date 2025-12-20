@@ -142,7 +142,6 @@ export async function updateProfile(
             bio,
             ...(profileImage !== undefined && { profile_image: profileImage })
         };
-        console.log("token : : : ",token)
         const res = await apiFetch('/api/me/profile', {
             method: 'PATCH',
             body: JSON.stringify(body),

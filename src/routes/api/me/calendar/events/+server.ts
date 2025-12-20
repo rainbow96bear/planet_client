@@ -9,7 +9,6 @@ const USER_SERVER_GRAPHQL = process.env.VITE_USER_SERVER_GRAPHQL;
 export const POST: RequestHandler = async (event) => {
   try {
     const input = await event.request.json();
-    console.log("create calendar event : ", input)
     const data = await graphqlWithAuth(
       USER_SERVER_GRAPHQL!,
       CREATE_CALENDAR_EVENT,

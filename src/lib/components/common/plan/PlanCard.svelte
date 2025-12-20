@@ -74,7 +74,7 @@
       const res = await apiFetch(`/api/me/todos/${todo.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ is_done: todo.isDone }),
+        body: JSON.stringify({ isDone: todo.isDone }),
         accessToken: token
       });
 

@@ -46,7 +46,6 @@
           accessToken,
           userId,
           expiresAt,
-          isLoggedIn:true
         });
 
         // ---- 원래 페이지로 이동 ----

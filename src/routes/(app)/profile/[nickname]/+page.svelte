@@ -36,7 +36,6 @@
   // ---------------------------
   onMount(async () => {
     const userData = $user;
-
     // 내 프로필인지 판별
     isMyProfile = userData?.nickname === nickname;
 
