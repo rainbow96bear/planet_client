@@ -8,7 +8,7 @@ import { ISSUE_ACCESS_TOKEN } from '$lib/graphql';
 import { env } from '$env/dynamic/private'; // 환경 변수 접근을 위해 추가
 
 // --- 상수 정의 ---
-const AT_EXPIRES_KEY = 'at_expires_at'; 
+const AT_EXPIRES_KEY = process.env.VITE_AT_EXPIRES_KEY || 'at_expires_at';
 const REFRESH_TOKEN = process.env.VITE_REFRESH_TOKEN_NAME!
 const AUTH_SERVER_GRAPHQL = env.VITE_AUTH_SERVER_GRAPHQL; // GraphQL 서버 주소
 

@@ -46,7 +46,7 @@
   </nav>
 
   {#if $isLoggedIn && $user.id}
-    <button class={styles.createBtn} on:click={() => navigate('/create')}>
+    <button class={styles.createBtn} on:click={() => navigate('/calendar/new')}>
       <span class={styles.createIcon}>✏️</span>
       <span>새 할 일 작성</span>
     </button>

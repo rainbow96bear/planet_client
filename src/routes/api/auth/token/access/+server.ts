@@ -6,6 +6,7 @@ import { ISSUE_ACCESS_TOKEN } from '$lib/graphql';
 
 const AUTH_SERVER_GRAPHQL = process.env.VITE_AUTH_SERVER_GRAPHQL!;
 const REFRESH_COOKIE_NAME = process.env.REFRESH_TOKEN_COOKIE_NAME || 'refreshToken';
+const AT_EXPIRES_KEY = process.env.VITE_AT_EXPIRES_KEY || 'at_expires_at';
 
 export const POST: RequestHandler = async ({ cookies }) => {
   const refreshToken = cookies.get(REFRESH_COOKIE_NAME);
@@ -42,6 +43,7 @@ export const POST: RequestHandler = async ({ cookies }) => {
   } catch (err) {
     console.error('[POST /api/auth/token/access]', err);
     cookies.delete(REFRESH_COOKIE_NAME, { path: '/' });
+    cookies.delete(AT_EXPIRES_KEY, { path: '/' });
     return new Response(null, { status: 401 });
   }
 };
