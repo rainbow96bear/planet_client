@@ -69,24 +69,18 @@
     if (!title.trim()) return alert('제목 입력');
     if (!startAt || !endAt) return alert('날짜 선택');
     if (new Date(startAt) > new Date(endAt)) return alert('날짜 오류');
-
+    
     // todos 처리: 신규 생성 시 isDone 제거, 수정 시 포함
     const todosPayload = todos
       .filter(t => t.content.trim())
-      .map(t => {
-        if (eventData.eventId) {
-          // 수정 시 id, isDone 포함
-          return {
-            ...(t.id && { id: t.id }),
-            content: t.content,
-            ...(t.isDone !== undefined && { isDone: t.isDone })
-          };
-        } else {
-          // 신규 생성 시 isDone 제외
-          return { content: t.content };
-        }
-      });
+      .map(t => ({
+        ...(t.id && { id: t.id }),
+        content: t.content,
+        ...(t.isDone !== undefined && { isDone: t.isDone })
+      }));
 
+
+    console.log("payload : ", todosPayload)
     dispatch('submit', {
       title,
       emoji,
