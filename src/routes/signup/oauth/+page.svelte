@@ -141,7 +141,7 @@
         if (data.redirect) {
           window.location.href = data.redirect;
         } else {
-          goto('/login');
+          goto('/');
         }
       } else {
         formErrorMessage = data.error || "회원가입 실패: 알 수 없는 오류가 발생했습니다.";

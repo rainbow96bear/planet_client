@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
 
-const AUTH_SERVER_GRAPHQL = process.env.VITE_USER_SERVER_GRAPHQL!;
+const USER_SERVER_GRAPHQL = process.env.VITE_USER_SERVER_GRAPHQL!;
 
 export const GET: RequestHandler = async ({ url }) => {
     const field = url.searchParams.get("field");
@@ -24,7 +24,7 @@ export const GET: RequestHandler = async ({ url }) => {
             }
         `;
 
-        const res = await fetch(AUTH_SERVER_GRAPHQL, {
+        const res = await fetch(USER_SERVER_GRAPHQL, {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",
