@@ -40,8 +40,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		if (newRefreshToken) {
 			cookies.set(REFRESH_COOKIE_NAME, newRefreshToken, {
 				path: "/",
-				httpOnly: true,
-				secure: true,
+				httpOnly: false,
+				secure: process.env.NODE_ENV === 'production',
 				sameSite: "lax",
 				maxAge: refreshExpiresAt ? Math.floor((new Date(refreshExpiresAt).getTime() - Date.now()) / 1000) : undefined
 			});

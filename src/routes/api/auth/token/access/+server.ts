@@ -1,16 +1,15 @@
 // src/routes/api/auth/token/access/+server.ts
-
 import type { RequestHandler } from '@sveltejs/kit';
 import { graphqlRequest } from '$lib/server/graphqlClient';
 import { ISSUE_ACCESS_TOKEN } from '$lib/graphql';
 
 const AUTH_SERVER_GRAPHQL = process.env.VITE_AUTH_SERVER_GRAPHQL!;
-const REFRESH_COOKIE_NAME = process.env.REFRESH_TOKEN_COOKIE_NAME || 'refreshToken';
-const AT_EXPIRES_KEY = process.env.VITE_AT_EXPIRES_KEY || 'at_expires_at';
+const REFRESH_COOKIE_NAME = process.env.VITE_REFRESH_TOKEN_COOKIE_NAME || 'refreshToken';
+const ACCESS_COOKIE_NAME = process.env.VITE_ACCESS_TOKEN_NAME || 'accessToken';
 
 export const POST: RequestHandler = async ({ cookies }) => {
   const refreshToken = cookies.get(REFRESH_COOKIE_NAME);
-  
+
   if (!refreshToken) {
     return new Response(null, { status: 401 });
   }
@@ -21,29 +20,23 @@ export const POST: RequestHandler = async ({ cookies }) => {
         accessToken: string;
         expiresAt: string;
       };
-    }>(
-      AUTH_SERVER_GRAPHQL,
-      ISSUE_ACCESS_TOKEN,
-      { refreshToken }
-    );
+    }>(AUTH_SERVER_GRAPHQL, ISSUE_ACCESS_TOKEN, { refreshToken });
+    const { accessToken, expiresAt } = data.issueAccessToken;
+    const expires = new Date(expiresAt);
 
-    const payload = data?.issueAccessToken;
-
-    if (!payload?.accessToken || !payload.expiresAt) {
-      throw new Error('Invalid issueAccessToken response');
-    }
-
-    return new Response(null, {
-      status: 200,
-      headers: {
-        Authorization: `Bearer ${payload.accessToken}`,
-        'X-Expires-At': payload.expiresAt
-      }
+    cookies.set(ACCESS_COOKIE_NAME, accessToken, {
+      path: '/',
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      expires
     });
+
+    return new Response(null, { status: 204 });
   } catch (err) {
-    console.error('[POST /api/auth/token/access]', err);
-    cookies.delete(REFRESH_COOKIE_NAME, { path: '/' });
-    cookies.delete(AT_EXPIRES_KEY, { path: '/' });
+    console.log("api autn token access")
+    // cookies.delete(REFRESH_COOKIE_NAME, { path: '/' });
+    // cookies.delete(ACCESS_COOKIE_NAME, { path: '/' });
     return new Response(null, { status: 401 });
   }
 };

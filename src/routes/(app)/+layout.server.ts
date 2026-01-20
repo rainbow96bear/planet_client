@@ -87,7 +87,6 @@ export const load: LayoutServerLoad = async ({ cookies, fetch }) => {
 
     } catch (e) {
         console.error('Authentication or Profile Fetch Failed:', e);
-
         // 실패 시 RT 및 AT 만료 시간 쿠키 삭제 (로그아웃 처리)
         cookies.delete(REFRESH_TOKEN, { path: '/' });
         cookies.delete(AT_EXPIRES_KEY, { path: '/' });

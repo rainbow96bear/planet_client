@@ -3,6 +3,8 @@ import { OAUTH_LOGIN } from '$lib/graphql';
 import { graphqlRequest } from '$lib/server/graphqlClient';
 import { redirect, type RequestHandler } from '@sveltejs/kit';
 
+const REFRESH_COOKIE_NAME = process.env.VITE_REFRESH_TOKEN_COOKIE_NAME || 'refreshToken';
+
 export const GET: RequestHandler = async ({ url, fetch, cookies }) => {
     const code = url.searchParams.get('code');
     if (!code) {
@@ -68,10 +70,10 @@ export const GET: RequestHandler = async ({ url, fetch, cookies }) => {
         return diff > 0 ? Math.floor(diff) : 0;
     };
 
-    cookies.set("refreshToken", data.refreshToken, {
+    cookies.set(REFRESH_COOKIE_NAME, data.refreshToken, {
         path: "/",
-        httpOnly: true,
-        secure: true,
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
         sameSite: "lax",
         maxAge: calcMaxAge(data.refreshTokenExpiresAt)
     });
