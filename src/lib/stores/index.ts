@@ -7,11 +7,11 @@ export {  feedStore,
   isLoading,
   error,
   filteredFeeds,
-  feedStats } from './feed'
+  feedStats } from './feed/feed.store'
 export type {
   Feed,
   FeedUser,
   FeedFilter,
   FeedVisibility,
   TodoItem
-} from './feed'
+} from './feed/feed.store'
