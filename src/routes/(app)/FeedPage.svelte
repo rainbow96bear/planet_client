@@ -1,25 +1,34 @@
 <script lang="ts">
   import { feedStore } from '$lib/stores/feed';
 
-  import FeedFilterTabs from './FeedFilterTabs.svelte';
-  import FeedList from './FeedList.svelte';
-  import FeedLoading from './FeedLoading.svelte';
-  import FeedEmpty from './FeedEmpty.svelte';
+  import FeedFilterTabs from '$lib/components/feed/FeedFilterTabs.svelte';
+  import FeedList from '$lib/components/feed/FeedList.svelte';
+  import FeedLoading from '$lib/components/feed/FeedLoading.svelte';
+  import FeedEmpty from '$lib/components/feed/FeedEmpty.svelte';
+
+  const {
+    filter,
+    loading,
+    filteredFeeds,
+    setFilter,
+    toggleLike,
+    toggleBookmark
+  } = feedStore;
 </script>
 
 <FeedFilterTabs
-  bind:selected={$feedStore.filter}
-  on:change={(e) => feedStore.setFilter(e.detail)}
+  selected={$filter}
+  on:change={(e) => setFilter(e.detail)}
 />
 
-{#if $feedStore.loading}
+{#if $loading}
   <FeedLoading />
-{:else if $feedStore.filteredFeeds.length === 0}
+{:else if $filteredFeeds.length === 0}
   <FeedEmpty />
 {:else}
   <FeedList
-    feeds={$feedStore.filteredFeeds}
-    on:like={(e) => feedStore.toggleLike(e.detail)}
-    on:bookmark={(e) => feedStore.toggleBookmark(e.detail)}
+    feeds={$filteredFeeds}
+    on:like={(e) => toggleLike(e.detail)}
+    on:bookmark={(e) => toggleBookmark(e.detail)}
   />
 {/if}

@@ -1,3 +1,2 @@
-
 export * from './feed.types';
-export * from './feed.store';
+export { feedStore } from './feed.store';

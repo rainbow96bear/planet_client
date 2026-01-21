@@ -4,28 +4,45 @@
   import styles from './FeedFilterTabs.module.css';
 
   export let selected: FeedFilter;
-  const dispatch = createEventDispatcher();
+
+  const dispatch = createEventDispatcher<{
+    change: FeedFilter;
+  }>();
+
+  function select(filter: FeedFilter) {
+    if (filter === selected) return;
+    dispatch('change', filter);
+  }
+  $: tabClass = (filter: FeedFilter) => {
+    return [
+      styles.tab,
+      selected === filter ? styles.active : ''
+    ].join(' ');
+  };
 </script>
 
 <div class={styles.tabs}>
   <button
-    class={`${styles.tab} ${selected === 'all' ? styles.active : ''}`}
-    on:click={() => dispatch('change', 'all')}
+    type="button"
+    class={tabClass('all')}
+    on:click={() => select('all')}
   >
     전체
   </button>
 
   <button
-    class={`${styles.tab} ${selected === 'following' ? styles.active : ''}`}
-    on:click={() => dispatch('change', 'following')}
+    type="button"
+    class={tabClass('popular')}
+    on:click={() => select('popular')}
   >
-    팔로잉
+    인기
   </button>
 
   <button
-    class={`${styles.tab} ${selected === 'popular' ? styles.active : ''}`}
-    on:click={() => dispatch('change', 'popular')}
+    type="button"
+    class={tabClass('following')}
+    on:click={() => select('following')}
   >
-    인기
+    팔로잉
   </button>
 </div>

@@ -1,26 +1,35 @@
 // src/lib/stores/feed/feed.types.ts
 
-export type FeedFilter = 'all' | 'following' | 'popular';
+export type FeedFilter = 'all' | 'popular' | 'following';
 
-export interface FeedUser {
+export type RawFeedTodo =
+  | string
+  | {
+      text: string;
+      completed: boolean;
+    };
+
+export type FeedTodo = {
+  text: string;
+  completed: boolean;
+};
+
+export type FeedUser = {
   name: string;
   handle: string;
   avatar: string;
-}
+};
 
-export interface FeedTodo {
-  text: string;
-  completed: boolean;
-}
-
-export interface Feed {
+export type FeedItem = {
   id: number;
-  user: FeedUser;
-  date: string;
   title: string;
-  todos: FeedTodo[];
+  emoji: string;
+  date: string;
+  todos: RawFeedTodo[];
+  user?: FeedUser;
   likes: number;
   comments: number;
   isLiked: boolean;
   isBookmarked: boolean;
-}
+  image?: boolean;
+};

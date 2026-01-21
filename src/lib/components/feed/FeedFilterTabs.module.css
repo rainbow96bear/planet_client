@@ -15,12 +15,7 @@
   border: none;
   border-radius: 999px;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-
-/* hover 시 밑줄 안 생기게 */
-.tab,
-.tab:hover {
+  transition: background 0.15s ease, color 0.15s ease;
   text-decoration: none;
 }
 

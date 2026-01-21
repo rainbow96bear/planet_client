@@ -3,37 +3,58 @@
   import { goto } from '$app/navigation';
   import styles from './FeedCard.module.css';
 
-  import type { Feed } from '$lib/stores/feed';
-  import type { FeedTodo, FeedUser } from './FeedCard';
+  import type { FeedItem, FeedTodo, FeedUser } from '$lib/stores/feed';
 
-  export let feed: Feed;
+  export let feed: FeedItem;
 
-  const dispatch = createEventDispatcher();
+  let user: FeedUser;
+  let todos: FeedTodo[];
+
+  const dispatch = createEventDispatcher<{
+    like: { feedId: number };
+    bookmark: { feedId: number };
+    comment: { feedId: number };
+    share: { feedId: number };
+    more: { feedId: number };
+  }>();
 
   function goToProfile(handle: string) {
+    if (!handle) return;
     goto(`/profile/${handle.replace('@', '')}`);
   }
 
-  function handleAction(action: string) {
+  function handleAction(action: keyof typeof actions) {
     dispatch(action, { feedId: feed.id });
   }
 
-  $: todos = feed.todos.map<FeedTodo>(todo =>
+  const actions = {
+    like: true,
+    bookmark: true,
+    comment: true,
+    share: true,
+    more: true
+  };
+
+  $: todos = feed.todos.map(todo =>
     typeof todo === 'string'
       ? { text: todo, completed: false }
       : todo
   );
 
-  $: user: FeedUser = feed.user ?? {
+  $: user = feed.user ?? {
     name: '익명',
     handle: '',
     avatar: '👤'
   };
 </script>
 
+
 <article class={styles.feedCard}>
   <div class={styles.feedHeader}>
-    <button class={styles.userInfo} on:click={() => goToProfile(user.handle)}>
+    <button
+      class={styles.userInfo}
+      on:click={() => goToProfile(user.handle)}
+    >
       <div class={styles.userAvatar}>{user.avatar}</div>
 
       <div class={styles.userDetails}>
@@ -73,7 +94,10 @@
               <div class={styles.checkboxUnchecked} />
             {/if}
           </div>
-          <span class:completed={todo.completed} class={styles.todoText}>
+          <span
+            class:completed={todo.completed}
+            class={styles.todoText}
+          >
             {todo.text}
           </span>
         </div>
@@ -89,22 +113,33 @@
 
   <div class={styles.feedActions}>
     <button
-      class={`${styles.actionBtn} ${feed.isLiked ? styles.liked : ''}`}
+      class={`${styles.actionBtn} ${
+        feed.isLiked ? styles.liked : ''
+      }`}
       on:click={() => handleAction('like')}
     >
       <span>{feed.isLiked ? '❤️' : '🤍'}</span>
       <span>{feed.likes}</span>
     </button>
 
-    <button class={styles.actionBtn} on:click={() => handleAction('comment')}>
+    <button
+      class={styles.actionBtn}
+      on:click={() => handleAction('comment')}
+    >
       💬 <span>{feed.comments}</span>
     </button>
 
-    <button class={styles.actionBtn} on:click={() => handleAction('bookmark')}>
+    <button
+      class={styles.actionBtn}
+      on:click={() => handleAction('bookmark')}
+    >
       🔖
     </button>
 
-    <button class={styles.actionBtn} on:click={() => handleAction('share')}>
+    <button
+      class={styles.actionBtn}
+      on:click={() => handleAction('share')}
+    >
       📤
     </button>
   </div>

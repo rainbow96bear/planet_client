@@ -1,10 +1,14 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import type { Feed } from '$lib/stores/feed';
   import FeedCard from './FeedCard.svelte';
+  import type { FeedItem } from '$lib/stores/feed';
 
-  export let feeds: Feed[];
-  const dispatch = createEventDispatcher();
+  export let feeds: FeedItem[];
+
+  const dispatch = createEventDispatcher<{
+    like: number;
+    bookmark: number;
+  }>();
 </script>
 
 {#each feeds as feed (feed.id)}

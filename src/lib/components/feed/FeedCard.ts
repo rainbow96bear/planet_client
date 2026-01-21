@@ -1,4 +1,5 @@
-// FeedCard.ts
+// src/lib/components/feed/FeedCard.ts
+
 export interface FeedUser {
   name: string;
   handle: string;
@@ -11,14 +12,17 @@ export interface FeedTodo {
 }
 
 export interface Feed {
-  id: string | number;
+  id: number;
   title: string;
   emoji: string;
   date: string;
-  todos: (string | FeedTodo)[];
-  image?: boolean;
+
   likes: number;
   comments: number;
   isLiked: boolean;
+
+  image?: string;
+  todos: Array<string | FeedTodo>;
+
   user?: FeedUser;
 }
