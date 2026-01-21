@@ -1,0 +1,35 @@
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-light);
+  background: var(--bg-primary);
+}
+
+.tab {
+  padding: 0.5rem 0.875rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+/* hover 시 밑줄 안 생기게 */
+.tab,
+.tab:hover {
+  text-decoration: none;
+}
+
+.tab:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.active {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}

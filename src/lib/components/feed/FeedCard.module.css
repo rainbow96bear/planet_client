@@ -1,0 +1,97 @@
+.feedCard {
+  background: var(--bg-primary);
+  border-radius: 1.25rem;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.feedCard:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Header */
+.feedHeader {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem;
+}
+
+.userInfo {
+  display: flex;
+  gap: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.userAvatar {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.userName {
+  font-weight: 600;
+}
+
+.userMeta {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.dot {
+  opacity: 0.5;
+}
+
+/* Content */
+.feedContent {
+  padding: 0 1rem 1rem;
+}
+
+.feedTitle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.todoList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.todoItem {
+  display: flex;
+  gap: 0.625rem;
+}
+
+.todoText.completed {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+/* Actions */
+.feedActions {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border-light);
+}
+
+.actionBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.liked {
+  color: var(--color-primary);
+}
