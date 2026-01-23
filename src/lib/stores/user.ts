@@ -1,31 +1,39 @@
 // src/lib/stores/user.ts
 import { writable } from 'svelte/store';
+import type { User, Theme } from '$lib/types/user';
 
-export const user = writable<{
-  id: string | null;
-  nickname: string | null;
-  profileImage?: string;  // 프로필 이미지 URL
-  bio:string;
-  theme: string;
-}>({
+export const user = writable<User>({
   id: null,
   nickname: null,
   profileImage: undefined,
-  bio:"",
+  bio: '',
   theme: 'light'
 });
 
-export function setTheme(newTheme: string) {
-  if (typeof document !== 'undefined') {
-    document.documentElement.setAttribute('data-theme', newTheme);
-  }
-
-  if (typeof localStorage !== 'undefined') {
-    localStorage.setItem('theme', newTheme);
-  }
-
-  user.update((u) => ({
+/**
+ * ⚠️ 순수 상태 변경만 담당
+ * DOM / localStorage / API ❌
+ */
+export function setUserTheme(theme: Theme) {
+  user.update(u => ({
     ...u,
-    theme: newTheme
+    theme
   }));
+}
+
+export function setUserProfile(partial: Partial<User>) {
+  user.update(u => ({
+    ...u,
+    ...partial
+  }));
+}
+
+export function resetUser() {
+  user.set({
+    id: null,
+    nickname: null,
+    profileImage: undefined,
+    bio: '',
+    theme: 'light'
+  });
 }

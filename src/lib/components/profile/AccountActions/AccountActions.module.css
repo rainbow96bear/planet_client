@@ -1,0 +1,13 @@
+.dangerZone {
+  margin-top: 3rem;
+  text-align: center;
+}
+
+.logout {
+  background: none;
+  border: none;
+  color: var(--color-danger, #ef4444);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}

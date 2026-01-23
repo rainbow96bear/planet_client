@@ -1,0 +1,52 @@
+/* profile-hero.module.css */
+.hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+}
+
+.info {
+  flex: 1;
+}
+
+.nickname {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.bio {
+  color: var(--text-muted);
+}
+
+.editButton {
+  padding: 8px 12px;
+}
+
+.editForm {
+  width: 100%;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.save {
+  font-weight: 600;
+}
+
+.cancel {
+  opacity: 0.7;
+}

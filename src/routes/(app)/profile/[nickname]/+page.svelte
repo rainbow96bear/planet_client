@@ -1,224 +1,85 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
-  import { isLoggedIn, user } from '$lib/stores';
+  import { isLoggedIn } from '$lib/stores';
+
   import UserProfileHeader from '$lib/components/profile/UserProfileHeader.svelte';
   import Calendar from '$lib/components/common/calendar/Calendar.svelte';
   import FeedCard from '$lib/components/common/feed/FeedCard.svelte';
   import LoadingSpinner from '$lib/components/common/loadingSpinner/LoadingSpinner.svelte';
-  import styles from './page.module.css';
   import { ArrowLeft, ArrowRight } from 'lucide-svelte';
-  import { loadProfile, loadCalendar, loadFeed, fetchIsFollowing } from './page';
-  import type { CalendarDayEvent } from '$lib/types/calendar';
 
-  // ---------------------------
-  // 기본 값
-  // ---------------------------
-  $: nickname = $page.params.nickname ?? '';
+  import { ProfilePageState } from './profile.state';
+  import styles from './page.module.css';
 
-  let profile: any = null;
-  let isMyProfile = false;
-  let isFollowing: boolean | null = null;
+  $: nickname = $page.params.nickname!;
+  const state = new ProfilePageState(nickname);
 
-  let isLoadingProfile = true;
-  let isLoadingCalendar = true;
-  let isLoadingFeed = false;
-
-  let feedData: any[] = [];
-  let activeView: 'calendar' | 'feed' = 'calendar';
-
-  let calendarEvents: CalendarDayEvent[] = [];
-  let currentYear = new Date().getFullYear();
-  let currentMonth = new Date().getMonth() + 1;
-
-  // ---------------------------
-  // 초기 로드
-  // ---------------------------
-  onMount(async () => {
-    const userData = $user;
-    // 내 프로필인지 판별
-    isMyProfile = userData?.nickname === nickname;
-
-    // 팔로우 여부 (내 프로필 아닐 때만)
-    if (!isMyProfile) {
-      isFollowing = await fetchIsFollowing(nickname);
-    }
-
-    // 프로필 로드
-    profile = await loadProfile(nickname, isMyProfile);
-    isLoadingProfile = false;
-
-    // 내 프로필이면 user 스토어 업데이트
-    if (isMyProfile) {
-      user.update(u => ({
-        ...u,
-        id: profile.id,
-        nickname: profile.nickname,
-        profileImage: profile.profileImage,
-        bio: profile.bio,
-        theme: u.theme
-      }));
-    }
-
-    // 캘린더 이벤트 로드
-    await loadCalendarEvents();
-  });
-
-  async function loadCalendarEvents() {
-    isLoadingCalendar = true;
-    try {
-      calendarEvents = await loadCalendar(nickname, currentYear, currentMonth);
-    } catch (err) {
-      console.error('캘린더 불러오기 실패', err);
-      calendarEvents = [];
-    } finally {
-      isLoadingCalendar = false;
-    }
-  }
-
-  // ---------------------------
-  // 탭 변경
-  // ---------------------------
-  async function handleTabChange(view: 'calendar' | 'feed') {
-    activeView = view;
-
-    if (view === 'feed' && feedData.length === 0) {
-      isLoadingFeed = true;
-      feedData = await loadFeed(nickname);
-      isLoadingFeed = false;
-    }
-  }
-
-  // ---------------------------
-  // 월 변경
-  // ---------------------------
-  async function changeMonth(offset: number) {
-    let newMonth = currentMonth + offset;
-    let newYear = currentYear;
-
-    if (newMonth > 12) {
-      newMonth = 1;
-      newYear++;
-    } else if (newMonth < 1) {
-      newMonth = 12;
-      newYear--;
-    }
-
-    currentMonth = newMonth;
-    currentYear = newYear;
-
-    await loadCalendarEvents();
-  }
-
-  // ---------------------------
-  // 캘린더 이벤트 핸들러
-  // ---------------------------
-  function handleAddEvent(e: CustomEvent) {
-    const { year, month, day } = e.detail;
-    alert(`${year}년 ${month}월 ${day}일 일정 추가`);
-  }
-
-  function handleEditEvent(e: CustomEvent) {
-    alert(`${e.detail.event.title} 일정 수정`);
-  }
-
-  async function handleDeleteEvent(e: CustomEvent) {
-    const { event } = e.detail;
-    if (!confirm(`"${event.title}" 일정을 삭제할까요?`)) return;
-
-    try {
-      const token = localStorage.getItem("access_token");
-      if (!token) throw new Error("토큰 없음");
-
-      const res = await fetch(`/api/me/calendar/events/${event.id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (!res.ok) throw new Error();
-      alert("삭제 완료");
-      await loadCalendarEvents();
-    } catch (err) {
-      alert("삭제 실패");
-      console.error(err);
-    }
-  }
+  onMount(() => state.init());
 </script>
 
 <div class={styles.container}>
   <UserProfileHeader
-    isLoading={isLoadingProfile}
-    profile={profile}
-    isMyProfile={isMyProfile}
-    isFollowing={isFollowing}
-    isLoggedIn={$isLoggedIn}
-  />
+  {...props}
+  on:action={(e) => {
+    switch (e.detail) {
+      case 'add-calendar':
+        goto('/calendar/new');
+        break;
+      case 'add-feed':
+        goto('/feed/new');
+        break;
+      case 'settings':
+        goto('/settings');
+        break;
+      case 'follow':
+        followUser();
+        break;
+      case 'unfollow':
+        unfollowUser();
+        break;
+      case 'login':
+        goto('/login');
+        break;
+    }
+  }}
+/>
 
-  <!-- 탭 -->
+
   <div class={styles.tabsWrapper}>
-    <div class={styles.tabs}>
-      <button
-        class:active={activeView === 'calendar'}
-        on:click={() => handleTabChange('calendar')}
-      >
-        📅 캘린더
-      </button>
-      <button
-        class:active={activeView === 'feed'}
-        on:click={() => handleTabChange('feed')}
-      >
-        📰 피드
-      </button>
-    </div>
+    <button on:click={() => state.activeView = 'calendar'}>📅 캘린더</button>
+    <button on:click={() => {
+      state.activeView = 'feed';
+      state.switchToFeed();
+    }}>📰 피드</button>
   </div>
 
-  <!-- 캘린더 -->
-  {#if activeView === 'calendar'}
+  {#if state.activeView === 'calendar'}
     <div class={styles.monthControls}>
-      <button class={styles.monthButton} on:click={() => changeMonth(-1)}>
-        <ArrowLeft size={20} />
-      </button>
-
-      <span class={styles.currentMonthLabel}>
-        {currentYear}년 {currentMonth}월
-      </span>
-
-      <button class={styles.monthButton} on:click={() => changeMonth(1)}>
-        <ArrowRight size={20} />
-      </button>
+      <button on:click={() => state.changeMonth(-1)}><ArrowLeft /></button>
+      <span>{state.currentYear}년 {state.currentMonth}월</span>
+      <button on:click={() => state.changeMonth(1)}><ArrowRight /></button>
     </div>
 
-    <div class={styles.content}>
-      {#if isLoadingCalendar}
-        <LoadingSpinner message="캘린더 불러오는 중..." />
-      {:else}
-        <Calendar
-          events={calendarEvents}
-          nickname={nickname}
-          year={currentYear}          
-          month={currentMonth}       
-          on:addEvent={handleAddEvent}
-          on:editEvent={handleEditEvent}
-          on:deleteEvent={handleDeleteEvent}
-        />
-      {/if}
-    </div>
+    {#if state.isLoadingCalendar}
+      <LoadingSpinner message="캘린더 불러오는 중..." />
+    {:else}
+      <Calendar
+        events={state.calendarEvents}
+        nickname={nickname}
+        year={state.currentYear}
+        month={state.currentMonth}
+      />
+    {/if}
   {/if}
 
-  <!-- 피드 -->
-  {#if activeView === 'feed'}
-    <div class={styles.content}>
-      {#if isLoadingFeed}
-        <LoadingSpinner message="피드를 불러오는 중..." />
-      {:else if feedData.length > 0}
-        <div class={styles.feedList}>
-          {#each feedData as feed (feed.id)}
-            <FeedCard {feed} />
-          {/each}
-        </div>
-      {:else}
-        <div class={styles.emptyMessage}>아직 작성된 피드가 없습니다.</div>
-      {/if}
-    </div>
+  {#if state.activeView === 'feed'}
+    {#if state.isLoadingFeed}
+      <LoadingSpinner message="피드를 불러오는 중..." />
+    {:else}
+      {#each state.feedData as feed (feed.id)}
+        <FeedCard {feed} />
+      {/each}
+    {/if}
   {/if}
 </div>

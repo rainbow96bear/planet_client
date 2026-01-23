@@ -1,24 +1,32 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
-  import ProfileImg from '../common/profileImg/profileImg.svelte';
-  import LoadingSpinner from '../common/loadingSpinner/LoadingSpinner.svelte';
+  import { createEventDispatcher } from 'svelte';
+  import ProfileImg from '../../common/profileImg/profileImg.svelte';
+  import LoadingSpinner from '../../common/loadingSpinner/LoadingSpinner.svelte';
 
   import styles from './UserProfileHeader.module.css';
 
+  import type {
+    UserProfileHeaderProfile,
+    ActionType
+  } from './UserProfileHeader.types';
+
+  import { getActionButtons } from './UserProfileHeader.logic';
+
   export let isLoading = false;
-
-  export let profile: {
-    id: string;
-    nickname: string;
-    bio?: string;
-    profileImage?: string;
-    followerCount?: number;
-    followingCount?: number;
-  } | null = null;
-
+  export let profile: UserProfileHeaderProfile | null = null;
   export let isMyProfile = false;
   export let isFollowing: boolean | null = null;
   export let isLoggedIn = false;
+
+  const dispatch = createEventDispatcher<{
+    action: ActionType;
+  }>();
+
+  $: actions = getActionButtons({
+    isMyProfile,
+    isLoggedIn,
+    isFollowing
+  });
 </script>
 
 {#if isLoading}
@@ -31,13 +39,14 @@
     <!-- 프로필 정보 -->
     <div class={styles.profileInfo}>
       <ProfileImg
-        src={profile.profileImage ?? undefined}
+        src={profile.profileImage}
         alt={profile.nickname}
         size={80}
       />
 
       <div class={styles.text}>
         <h1>{profile.nickname}</h1>
+
         {#if profile.bio}
           <p>{profile.bio}</p>
         {/if}
@@ -55,45 +64,14 @@
 
     <!-- 액션 버튼 -->
     <div class={styles.actions}>
-      {#if isMyProfile}
+      {#each actions as action}
         <button
-          class={`${styles.button} ${styles.primary}`}
-          on:click={() => goto(`/calendar/new`)}
+          class={`${styles.button} ${styles[action.variant]}`}
+          on:click={() => dispatch('action', action.type)}
         >
-          일정 추가
+          {action.label}
         </button>
-
-        <button
-          class={`${styles.button} ${styles.primary}`}
-          on:click={() => goto(`/feed/new`)}
-        >
-          피드 작성
-        </button>
-
-        <button
-          class={`${styles.button} ${styles.secondary}`}
-          on:click={() => goto('/settings')}
-        >
-          설정
-        </button>
-
-      {:else if isLoggedIn}
-        <button
-          class={`${styles.button} ${
-            isFollowing ? styles.outline : styles.primary
-          }`}
-        >
-          {isFollowing ? '언팔로우' : '팔로우'}
-        </button>
-
-      {:else}
-        <button
-          class={`${styles.button} ${styles.primary}`}
-          on:click={() => goto('/login')}
-        >
-          팔로우
-        </button>
-      {/if}
+      {/each}
     </div>
   </header>
 

@@ -3,8 +3,8 @@
 
   import FeedFilterTabs from '$lib/components/feed/FeedFilterTabs.svelte';
   import FeedList from '$lib/components/feed/FeedList.svelte';
-  import FeedLoading from '$lib/components/feed/FeedLoading.svelte';
   import FeedEmpty from '$lib/components/feed/FeedEmpty.svelte';
+	import Loading from '$lib/components/loading/Loading.svelte';
 
   const {
     filter,
@@ -22,7 +22,7 @@
 />
 
 {#if $loading}
-  <FeedLoading />
+  <Loading message={"피드를 불러오는 중..."}/>
 {:else if $filteredFeeds.length === 0}
   <FeedEmpty />
 {:else}
