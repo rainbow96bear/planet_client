@@ -1,7 +1,7 @@
 // src/routes/api/user/theme/+server.ts
 import type { RequestHandler } from '@sveltejs/kit';
 import { UPDATE_PROFILE_THEME } from '$lib/graphql';
-import { graphqlWithAuth } from '$lib/server/graphqlWithAuth';
+import { graphqlRequest } from '$lib/server/graphqlRequest';
 
 const USER_SERVER_GRAPHQL = process.env.VITE_USER_SERVER_GRAPHQL;
 
@@ -25,11 +25,11 @@ export const PATCH: RequestHandler = async (event) => {
       }
     };
 
-    const data = await graphqlWithAuth(
+    const data = await graphqlRequest(
+      event,
       USER_SERVER_GRAPHQL!,
       UPDATE_PROFILE_THEME,
       variables,
-      event
     );
 
     return new Response(JSON.stringify(data.updateProfile), {

@@ -11,9 +11,7 @@ export async function loadCalendar(
 ): Promise<CalendarEvent[]> {
   try {
     const isMine = get(user)?.nickname === nickname;
-    let url = isMine
-      ? '/api/me/calendar'
-      : `/api/users/${nickname}/calendar`;
+    let url = '/api/calendar'
 
     url += `?year=${year}&month=${month}`;
 

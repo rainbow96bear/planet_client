@@ -46,7 +46,7 @@ export async function submitCalendar(event: CustomEvent<FormData>) {
   }
 
   try {
-    const res = await fetch('/api/me/calendar/events', {
+    const res = await fetch('/api/calendar/events', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,

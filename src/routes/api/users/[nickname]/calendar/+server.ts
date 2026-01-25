@@ -1,24 +1,43 @@
+// src/routes/api/users/[nickname]/calendar/+server.ts
 import type { RequestHandler } from '@sveltejs/kit';
+import { json, error } from '@sveltejs/kit';
+import { graphqlRequest } from '$lib/server/graphqlRequest';
+import { GET_CALENDAR_EVENTS } from '$lib/graphql/calendar.graphql';
 
-const USER_SERVER_API_URL = process.env.VITE_USER_SERVER_API_URL;
+const GRAPHQL_URL = process.env.VITE_USER_SERVER_GRAPHQL!;
 
-export const GET: RequestHandler = async ({ params, url }) => {
-  const nickname = params.nickname;
+export const GET: RequestHandler = async (event) => {
+  try {
+    const { params, url } = event;
+    const { nickname } = params;
 
-  // year, month 쿼리 파라미터 가져오기
-  const year = url.searchParams.get('year');
-  const month = url.searchParams.get('month');
+    if (!nickname) {
+      return error(400, { message: 'nickname이 필요합니다.' });
+    }
 
-  if (!year || !month) {
-    return new Response(JSON.stringify({ error: 'year과 month 쿼리 필요' }), { status: 400 });
+    const year = Number(url.searchParams.get('year'));
+    const month = Number(url.searchParams.get('month'));
+
+    if (!year || !month) {
+      return error(400, { message: 'year, month 쿼리가 필요합니다.' });
+    }
+
+    const data = await graphqlRequest<{
+      calendarEvents: any[];
+    }>(
+      event,                // ✅ 여기 중요
+      GRAPHQL_URL,
+      GET_CALENDAR_EVENTS,
+      {
+        userId: nickname,   // 또는 nickname → userId 매핑
+        year,
+        month,
+      }
+    );
+
+    return json(data.calendarEvents);
+  } catch (err) {
+    console.error('GET /api/users/[nickname]/calendar', err);
+    return error(500, { message: '서버 내부 오류' });
   }
-
-  // 백엔드 API 호출 시 쿼리 붙이기
-  const apiUrl = `${USER_SERVER_API_URL}/users/${nickname}/calendar?year=${year}&month=${month}`;
-
-  const res = await fetch(apiUrl, { method: 'GET' });
-
-  if (!res.ok) return new Response(JSON.stringify({ error: '조회 실패' }), { status: res.status });
-  const data = await res.json();
-  return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
 };

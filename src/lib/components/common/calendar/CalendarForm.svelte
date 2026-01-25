@@ -107,7 +107,7 @@
     if (!confirm('정말 삭제할까요?')) return;
 
     const res = await apiFetch(
-      `/api/me/calendar/events/${eventData.eventId}`,
+      `/api/calendar/events/${eventData.eventId}`,
       { method: 'DELETE', accessToken: token }
     );
 

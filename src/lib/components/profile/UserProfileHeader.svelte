@@ -1,7 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
-  import ProfileImg from '../../common/profileImg/profileImg.svelte';
-  import LoadingSpinner from '../../common/loadingSpinner/LoadingSpinner.svelte';
+  import ProfileImg from '$lib/components/ui/ProfileImg/ProfileImg.svelte';
 
   import styles from './UserProfileHeader.module.css';
 
@@ -11,6 +10,7 @@
   } from './UserProfileHeader.types';
 
   import { getActionButtons } from './UserProfileHeader.logic';
+	import Loading from '../loading/Loading.svelte';
 
   export let isLoading = false;
   export let profile: UserProfileHeaderProfile | null = null;
@@ -31,7 +31,7 @@
 
 {#if isLoading}
   <div class={styles.state}>
-    <LoadingSpinner message="로딩 중..." />
+    <Loading message="로딩 중..." />
   </div>
 
 {:else if profile}

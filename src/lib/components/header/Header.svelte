@@ -1,9 +1,8 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import SearchBar from './SearchBar.svelte';
-  import HeaderActions from './HeaderActions.svelte';
+  import HeaderActions from './HeaderActions/HeaderActions.svelte';
   import MobileMenu from './MobileMenu.svelte';
-	import { get } from 'svelte/store';
 	import { user } from '$lib/stores';
 
   let isMenuOpen = false;

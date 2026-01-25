@@ -1,7 +1,8 @@
 import { json, type RequestHandler } from '@sveltejs/kit';
-import { graphqlWithAuth } from '$lib/server/graphqlWithAuth';
 import { GET_MY_CALENDAR_DAILY_EVENT } from '$lib/graphql';
 import { env } from 'process';
+import { graphqlRequest } from '$lib/server/graphqlRequest';
+import { GET_CALENDAR_EVENT } from '$lib/graphql/calendar.graphql';
 
 const USER_SERVER_GRAPHQL = env.VITE_USER_SERVER_GRAPHQL;
 
@@ -17,11 +18,11 @@ export const GET: RequestHandler = async (event) => {
   }
 
   try {
-    const data = await graphqlWithAuth(
+    const data = await graphqlRequest(
+      event,
       USER_SERVER_GRAPHQL!,
-      GET_MY_CALENDAR_DAILY_EVENT,
+      GET_CALENDAR_EVENT,
       { date: toRFC3339Nano(dateString) },
-      event
     );
     return json({ dailyPlans: data.myCalendarEventsByDate });
   } catch (err) {

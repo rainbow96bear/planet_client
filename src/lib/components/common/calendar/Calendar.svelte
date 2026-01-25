@@ -54,7 +54,7 @@
       // 실제 API 호출 가능
       const token = get(auth)?.accessToken;
       const res = await apiFetch(
-        `/api/me/calendar/events/${event.id}`,
+        `/api/calendar/events/${event.id}`,
         { method: 'DELETE', accessToken: token }
       );
 

@@ -40,7 +40,7 @@ export async function initCalendarEditPage(): Promise<EditCalendarState> {
   const eventId = get(page).params.eventId;
 
   try {
-    const res = await apiFetch(`/api/me/calendar/events/${eventId}`, {
+    const res = await apiFetch(`/api/calendar/events/${eventId}`, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json'

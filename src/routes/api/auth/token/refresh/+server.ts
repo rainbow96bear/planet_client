@@ -1,5 +1,5 @@
 import { REFRESH_ACCESS_TOKEN } from "$lib/graphql";
-import { graphqlRequest } from "$lib/server/graphqlClient";
+import { graphqlRequest } from "$lib/server/graphqlRequest";
 import type { RequestHandler } from "@sveltejs/kit";
 
 const REFRESH_COOKIE_NAME = process.env.VITE_REFRESH_TOKEN_NAME ?? "refresh_token";

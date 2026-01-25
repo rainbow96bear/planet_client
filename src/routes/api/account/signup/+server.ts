@@ -1,6 +1,6 @@
 // src/routes/api/signup/+server.ts
 import { SIGNUP_MUTATION } from "$lib/graphql";
-import { graphqlRequest } from "$lib/server/graphqlClient";
+import { graphqlRequest } from "$lib/server/graphqlRequest";
 import type { RequestHandler } from "@sveltejs/kit";
 
 const AUTH_SERVER_GRAPHQL = process.env.VITE_AUTH_SERVER_GRAPHQL;

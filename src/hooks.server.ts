@@ -1,6 +1,6 @@
 // src/hooks.server.ts
 import type { Handle } from '@sveltejs/kit';
-import { graphqlRequest } from '$lib/server/graphqlClient';
+import { graphqlRequest } from '$lib/server/graphqlRequest';
 import { ISSUE_ACCESS_TOKEN } from '$lib/graphql';
 import { randomUUID } from 'crypto';
 import { verifyJwt } from '$lib/server/jwt';
@@ -40,20 +40,22 @@ export const handle: Handle = async ({ event, resolve }) => {
   if (accessToken) {
     try {
       const payload = verifyJwt(accessToken);
-      event.locals.user = { id: payload.sub, role: payload.role };
-      event.locals.accessToken = accessToken; // endpoint에서 접근 가능
+      event.locals.user = {
+        id: payload.sub,
+        role: payload.role
+      };
     } catch {
-      // access token 만료/위조 → 삭제하고 refresh 시도
       event.cookies.delete(ACCESS_COOKIE, { path: '/' });
       accessToken = undefined;
     }
   }
 
   /* ===============================
-   * 3. refresh token으로 access token 재발급
+   * 3. refresh token으로 재발급
    * =============================== */
   if (!accessToken) {
     const refreshToken = event.cookies.get(REFRESH_COOKIE);
+
     if (refreshToken) {
       try {
         const data = await graphqlRequest<{
@@ -61,32 +63,30 @@ export const handle: Handle = async ({ event, resolve }) => {
             accessToken: string;
             expiresAt: string;
           };
-        }>(AUTH_SERVER_GRAPHQL, ISSUE_ACCESS_TOKEN, { refreshToken });
+        }>(event, AUTH_SERVER_GRAPHQL, ISSUE_ACCESS_TOKEN, { refreshToken });
 
-        const { accessToken: newAccessToken, expiresAt } = data.issueAccessToken;
+        const { accessToken: newToken, expiresAt } = data.issueAccessToken;
 
-        event.cookies.set(ACCESS_COOKIE, newAccessToken, {
+        event.cookies.set(ACCESS_COOKIE, newToken, {
           path: '/',
           httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
+          secure: process.env.NODE_ENV === 'production',
           expires: new Date(expiresAt)
         });
 
-        const payload = verifyJwt(newAccessToken);
-        event.locals.user = { id: payload.sub, role: payload.role };
-        event.locals.accessToken = newAccessToken;
+        const payload = verifyJwt(newToken);
+        event.locals.user = {
+          id: payload.sub,
+          role: payload.role
+        };
       } catch (err) {
-        console.log('hooks refresh token error:', err);
-        // refresh 실패 → 로그아웃 처리
+        console.error('[hooks] refresh failed:', err);
         event.cookies.delete(ACCESS_COOKIE, { path: '/' });
         event.cookies.delete(REFRESH_COOKIE, { path: '/' });
       }
     }
   }
 
-  /* ===============================
-   * 4. 요청 계속 진행
-   * =============================== */
   return resolve(event);
 };

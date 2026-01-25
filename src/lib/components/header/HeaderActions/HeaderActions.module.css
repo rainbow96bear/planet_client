@@ -1,39 +1,11 @@
-<script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  import { goto } from '$app/navigation';
-  import { user,isLoggedIn } from '$lib/stores';
-	import ProfileImg from '../ui/ProfileImg/ProfileImg.svelte';
-  export let isMenuOpen: boolean;
-  const dispatch = createEventDispatcher();
-  function handleToggleMenu() {
-    dispatch('toggleMenu');
-  }
-</script>
-
-<div class="header-actions">
-  {#if $isLoggedIn}
-    <button class="icon-btn desktop-only" on:click={() => goto('/explore')} title="탐색">🌍</button>
-    <button class="avatar-btn" on:click={() => goto('/profile')} title="프로필">
-      <ProfileImg src={$user.profileImage ?? undefined} alt={$user.nickname ?? ''} size={40} />
-    </button>
-    <button class="menu-btn mobile-only" on:click={handleToggleMenu}>
-      {isMenuOpen ? '✕' : '☰'}
-    </button>
-  {:else}
-    <button class="signup-btn" on:click={() => goto('/login')}>시작하기</button>
-  {/if}
-</div>
-
-<style>
-/* HeaderActions 컨테이너 */
-.header-actions {
+.headerActions {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
 /* 공통 아이콘 버튼 */
-.icon-btn {
+.iconBtn {
   position: relative;
   width: 2.5rem;
   height: 2.5rem;
@@ -48,19 +20,22 @@
   justify-content: center;
 }
 
-.icon-btn:hover {
+.iconBtn:hover {
   background: var(--border-light);
   transform: scale(1.05);
 }
 
 /* 아바타 버튼 */
-.avatar-btn {
+.avatarBtn {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 50%;
   border: 2px solid var(--color-primary);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
-  font-size: 1.25rem;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -68,12 +43,12 @@
   transition: all 0.2s;
 }
 
-.avatar-btn:hover {
+.avatarBtn:hover {
   transform: scale(1.05);
 }
 
 /* 모바일 메뉴 버튼 */
-.menu-btn {
+.menuBtn {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 0.5rem;
@@ -84,16 +59,20 @@
   transition: all 0.2s;
 }
 
-.menu-btn:hover {
+.menuBtn:hover {
   background: var(--border-light);
 }
 
 /* 비로그인 상태 버튼 */
-.signup-btn {
+.signupBtn {
   padding: 0.625rem 1.25rem;
   border-radius: 1.25rem;
   border: none;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
   color: white;
   font-weight: 600;
   font-size: 0.9375rem;
@@ -102,26 +81,26 @@
   box-shadow: 0 2px 8px rgba(125, 189, 182, 0.3);
 }
 
-.signup-btn:hover {
+.signupBtn:hover {
   transform: scale(1.02);
   box-shadow: 0 4px 12px rgba(125, 189, 182, 0.4);
 }
 
 /* 반응형 */
-.desktop-only {
+.desktopOnly {
   display: flex;
 }
 
-.mobile-only {
+.mobileOnly {
   display: none;
 }
 
 @media (max-width: 768px) {
-  .desktop-only {
+  .desktopOnly {
     display: none;
   }
-  .mobile-only {
+
+  .mobileOnly {
     display: flex;
   }
 }
-</style>
