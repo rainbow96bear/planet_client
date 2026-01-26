@@ -33,6 +33,5 @@ export interface ProfileStoreState {
   calendarEvents: CalendarEvent[];
   isFollowing: boolean | null;
   loading: boolean;
-  error: string | null;
   viewerId: string | null; // 내 user_id
 }

@@ -8,7 +8,6 @@ function createProfileStore() {
     calendarEvents: [],
     isFollowing: null,
     loading: false,
-    error: null,
     viewerId: null
   };
 
@@ -16,7 +15,6 @@ function createProfileStore() {
 
   const profile = derived(store, $s => $s.profile);
   const loading = derived(store, $s => $s.loading);
-  const error = derived(store, $s => $s.error);
   const isOwnProfile = derived(store, $s =>
     $s.profile ? $s.viewerId === $s.profile.user_id : false
   );
@@ -24,13 +22,11 @@ function createProfileStore() {
   return {
     profile,
     loading,
-    error,
     isOwnProfile,
     subscribe: store.subscribe,
     setProfile: (profile: Profile | null, viewerId?: string) =>
       store.update(s => ({ ...s, profile, viewerId: viewerId ?? s.viewerId, error: null })),
     setLoading: (loading: boolean) => store.update(s => ({ ...s, loading })),
-    setError: (error: string | null) => store.update(s => ({ ...s, error })),
     reset: () => store.set(initialState)
   };
 }
